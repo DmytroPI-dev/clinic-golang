@@ -1,0 +1,44 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*_test
+
+# Output of the go tool
+.cache
+.debug
+.profile
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.bak
+*.tmp
+*.log
+
+# Dependency directories (example)
+vendor/
+
+# Go modules
+go.sum
+go.mod
+
+# Environment variables
+.env
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Build outputs
+/bin/
+/pkg/
+
+# Logs and databases
+*.log
+*.db
