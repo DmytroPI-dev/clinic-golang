@@ -35,7 +35,7 @@ func ListPrograms(db *gorm.DB) gin.HandlerFunc {
 		var programs []models.Program
 		// 1. Fetching all programs from the database.
 		if err := db.Find(&programs).Error; err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch programs"})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch Programs"})
 			return
 		}
 
@@ -220,5 +220,31 @@ func UpdateProgram(db *gorm.DB) gin.HandlerFunc {
 
 		// Return updated response
 		ctx.JSON(http.StatusOK, program)
+	}
+}
+
+// DeleteProgram is the handler for deleting a program.
+
+func DeleteProgram(db *gorm.DB) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// 1. Get the ID from URL
+		id := ctx.Param("id")
+		// 2. Use GORM to delete the program using ID.
+		// We execute the delete and check the number of rows affected.
+		result := db.Delete(&models.Program{}, id)
+
+		// 3. Handle DB errors
+		if result.Error != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete program"})
+			return
+		}
+		// 4. Check if record was deleted
+		if result.RowsAffected == 0 {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Program not found"})
+			return
+		}
+		// 5. Send success response.
+		// The standard response for a successful DELETE is 204 No Content.
+		ctx.Status(http.StatusNoContent)
 	}
 }
