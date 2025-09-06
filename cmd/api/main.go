@@ -1,14 +1,13 @@
 package main
 
 import (
-	"log"
-	"net/http"
-
 	"github.com/DmytroPI-dev/clinic-golang/internal/config"
 	"github.com/DmytroPI-dev/clinic-golang/internal/database"
 	"github.com/DmytroPI-dev/clinic-golang/internal/handler"
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"github.com/gin-gonic/gin"
+	"log"
+	"net/http"
 )
 
 func main() {
@@ -38,14 +37,12 @@ func main() {
 	{
 		// Programs list endpoint
 		v1.GET("/programs", handler.ListPrograms(db))
-	}
-	{
 		// Program detail endpoint
 		v1.GET("/programs/:id", handler.GetProgram(db))
-	}
-	{
 		// Program creation endpoint
 		v1.POST("/programs", handler.CreateProgram(db))
+		//Program update endpoint
+		v1.PUT("/programs/:id", handler.UpdateProgram(db))
 	}
 
 	//Testing

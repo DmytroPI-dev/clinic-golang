@@ -2,7 +2,7 @@ package models
 
 import "gorm.io/gorm"
 
-// Program corresponds to the Django project 'Program' model.
+// Program struct corresponds to the Django project 'Program' model.
 // We are manually adding the translation fields to match the database schema
 // used by the django-modeltranslation library.
 
