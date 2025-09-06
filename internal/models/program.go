@@ -2,7 +2,7 @@ package models
 
 import "gorm.io/gorm"
 
-// Program corresponds to the Django project 'Program' model.
+// Program struct corresponds to the Django project 'Program' model.
 // We are manually adding the translation fields to match the database schema
 // used by the django-modeltranslation library.
 
@@ -31,14 +31,3 @@ type Program struct {
 
 	Category string `gorm:"size:2"`
 }
-
-// Category constants for the Program model
-const (
-	Kosmetologia      = "KS"
-	Laseroterapia     = "LS"
-	Kosmetyka         = "KT"
-	ZabiegiEstetyczne = "ZE"
-	Trychologia       = "TR"
-	Podologia         = "PD"
-	Masaze            = "MS"
-)

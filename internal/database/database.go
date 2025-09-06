@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func DB_Connect(dsn string) (*gorm.DB, error){
+func DB_Connect(dsn string) (*gorm.DB, error) {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
