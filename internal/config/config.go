@@ -8,8 +8,10 @@ import (
 // Values are to bee read from env or config via Viper
 
 type Config struct {
-	ServerPort string `mapstructure:"SERVER_PORT"`
-	DB_DSN     string `mapstructure:"DB_DSN"`
+	ServerPort    string `mapstructure:"SERVER_PORT"`
+	DB_DSN        string `mapstructure:"DB_DSN"`
+	AdminRole     string `mapstructure:"ADMIN_ROLE"`
+	SessionSecret string `mapstructure:"SESSION_SECRET"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

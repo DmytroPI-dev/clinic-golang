@@ -5,6 +5,8 @@ import (
 	"github.com/DmytroPI-dev/clinic-golang/internal/database"
 	"github.com/DmytroPI-dev/clinic-golang/internal/handler"
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -25,20 +27,20 @@ func main() {
 	log.Println("Successfully connected to database")
 	// Migrating data
 	log.Println("Starting DB migration....")
-	if err := db.AutoMigrate(&models.Program{}); err != nil {
+	if err := db.AutoMigrate(&models.Program{}, &models.Price{}, &models.News{}, &models.User{}); err != nil {
 		log.Fatalf("migration for models.Program failed: %s", err)
-	}
-	if err := db.AutoMigrate(&models.Price{}); err != nil {
-		log.Fatalf("migration for models.Price failed: %s", err)
-	}
-	if err := db.AutoMigrate(&models.News{}); err != nil {
-		log.Fatalf("migration for models.HotelNews failed: %s", err)
 	}
 	log.Println("Migration successful")
 
 	// Creating Gin router
 	router := gin.Default()
-	// Grouping API routes under /api/v1
+	// Setting up session store
+	store := cookie.NewStore([]byte(cfg.SessionSecret))
+	router.Use(sessions.Sessions("session", store))
+
+	// Loading templates
+	router.LoadHTMLGlob("./templates/**/*")
+	// Grouping API routes
 	v1 := router.Group("/api/v1")
 	{
 		{
@@ -69,16 +71,24 @@ func main() {
 				newsRoutes.PUT("/:id", handler.UpdateNews(db))
 				newsRoutes.DELETE("/:id", handler.DeleteNews(db))
 			}
+			// Admin routes
+			adminRoutes := router.Group("/admin")
+			{
+				adminRoutes.GET("/dashboard", handler.AuthRequired(), handler.ShowDashboard(db))
+				adminRoutes.GET("/login", handler.ShowLoginPage)
+				adminRoutes.POST("/login", handler.HandleLogin(db))
+				// adminRoutes.GET("/logout", handler.Logout)
+				adminRoutes.GET("/programs/new", handler.AuthRequired(), handler.ShowNewProgramForm)
+			}
+			{
+				//Testing route
+				router.GET("/ping", func(ctx *gin.Context) {
+					ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
+				})
+			}
 		}
 	}
 
-	//Testing
-	router.GET("/ping", func(ctx *gin.Context) {
-		//c.Json sends response
-		ctx.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
 	// Start server
 	serverAddress := "localhost:" + cfg.ServerPort
 	log.Printf("Starting server on %s", serverAddress)

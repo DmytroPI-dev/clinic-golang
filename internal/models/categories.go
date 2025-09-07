@@ -1,12 +1,22 @@
 package models
 
-// Category constants for the Program model
+// Category constants
 const (
-	Kosmetologia      = "KS"
-	Laseroterapia     = "LS"
-	Kosmetyka         = "KT"
-	ZabiegiEstetyczne = "ZE"
-	Trychologia       = "TR"
-	Podologia         = "PD"
-	Masaze            = "MS"
+	Kosmetologia      string = "KS"
+	Laseroterapia     string = "LS"
+	Kosmetyka         string = "KT"
+	ZabiegiEstetyczne string = "ZE"
+	Trychologia       string = "TR"
+	Podologia         string = "PD"
+	Masaze            string = "MS"
 )
+
+var AllCategories = []string{
+	Kosmetologia,
+	Laseroterapia,
+	Kosmetyka,
+	ZabiegiEstetyczne,
+	Trychologia,
+	Podologia,
+	Masaze,
+}
