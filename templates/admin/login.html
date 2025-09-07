@@ -27,9 +27,9 @@
     <main class="login-form text-center">
         <form action="/admin/login" method="POST">
             {{ if .errors }}
-                {{ range .errors }}
-                    <div class="alert alert-danger" role="alert">{{ . }}</div>
-                {{ end }}
+            {{ range .errors }}
+            <div data-id="flash-messages" class="alert alert-danger" role="alert">{{ . }}</div>
+            {{ end }}
             {{ end }}
             <h1 class="h3 mb-3 fw-normal">Admin Panel Login</h1>
 
@@ -43,9 +43,17 @@
                 <label for="password">Password</label>
             </div>
 
-            <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+            <button class="w-100 btn btn-lg btn-success" type="submit">Sign in</button>
         </form>
     </main>
+    <script>
+        const alerts = document.querySelectorAll(`[data-id="flash-messages"]`);
+        if (alerts.length > 0) {
+            setTimeout(() => {
+                alerts.forEach(alert => alert.style.display = 'none');
+            }, 2000); // 2000 milliseconds = 2 seconds
+        }
+    </script>
 </body>
 
 </html>
