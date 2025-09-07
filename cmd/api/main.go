@@ -32,6 +32,7 @@ func main() {
 
 	// Creating Gin router
 	router := gin.Default()
+	router.LoadHTMLGlob("./templates/**/*")
 	// Grouping API routes under /api/v1
 	v1 := router.Group("/api/v1")
 	{
@@ -63,16 +64,20 @@ func main() {
 				newsRoutes.PUT("/:id", handler.UpdateNews(db))
 				newsRoutes.DELETE("/:id", handler.DeleteNews(db))
 			}
+			// Admin routes
+			adminRoutes := router.Group("/admin")
+			{
+				adminRoutes.GET("/dashboard", handler.ShowDashboard)
+				adminRoutes.GET("/login", handler.ShowLoginPage)
+
+			}
+			{
+				//Testing
+				router.GET("/ping", func(ctx *gin.Context) { ctx.JSON(http.StatusOK, gin.H{"message": "pong"}) })
+			}
 		}
 	}
 
-	//Testing
-	router.GET("/ping", func(ctx *gin.Context) {
-		//c.Json sends response
-		ctx.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
 	// Start server
 	serverAddress := "localhost:" + cfg.ServerPort
 	log.Printf("Starting server on %s", serverAddress)
