@@ -26,10 +26,10 @@
 <body>
     <main class="login-form text-center">
         <form action="/admin/login" method="POST">
-            {{ if .errors }}
-            {{ range .errors }}
-            <div data-id="flash-messages" class="alert alert-danger" role="alert">{{ . }}</div>
-            {{ end }}
+            {{ if .error }}
+            <div data-id="flash-messages" class="alert alert-warning" role="alert">
+                {{ .error }}
+            </div>
             {{ end }}
             <h1 class="h3 mb-3 fw-normal">Admin Panel Login</h1>
 

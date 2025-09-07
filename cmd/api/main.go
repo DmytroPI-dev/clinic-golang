@@ -74,7 +74,7 @@ func main() {
 			// Admin routes
 			adminRoutes := router.Group("/admin")
 			{
-				adminRoutes.GET("/dashboard", handler.ShowDashboard)
+				adminRoutes.GET("/dashboard", handler.AuthRequired(), handler.ShowDashboard)
 				adminRoutes.GET("/login", handler.ShowLoginPage)
 				adminRoutes.POST("/login", handler.HandleLogin(db))
 			}
