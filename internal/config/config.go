@@ -10,6 +10,7 @@ import (
 type Config struct {
 	ServerPort string `mapstructure:"SERVER_PORT"`
 	DB_DSN     string `mapstructure:"DB_DSN"`
+	AdminRole string `mapstructure:"ADMIN_ROLE"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

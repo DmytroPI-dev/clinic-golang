@@ -25,14 +25,8 @@ func main() {
 	log.Println("Successfully connected to database")
 	// Migrating data
 	log.Println("Starting DB migration....")
-	if err := db.AutoMigrate(&models.Program{}); err != nil {
+	if err := db.AutoMigrate(&models.Program{}, &models.Price{}, &models.News{}, &models.User{}); err != nil {
 		log.Fatalf("migration for models.Program failed: %s", err)
-	}
-	if err := db.AutoMigrate(&models.Price{}); err != nil {
-		log.Fatalf("migration for models.Price failed: %s", err)
-	}
-	if err := db.AutoMigrate(&models.News{}); err != nil {
-		log.Fatalf("migration for models.HotelNews failed: %s", err)
 	}
 	log.Println("Migration successful")
 
