@@ -5,6 +5,8 @@ import (
 	"github.com/DmytroPI-dev/clinic-golang/internal/database"
 	"github.com/DmytroPI-dev/clinic-golang/internal/handler"
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -32,8 +34,13 @@ func main() {
 
 	// Creating Gin router
 	router := gin.Default()
+	// Setting up session store
+	store := cookie.NewStore([]byte(cfg.SessionSecret))
+	router.Use(sessions.Sessions("session", store))
+
+	// Loading templates
 	router.LoadHTMLGlob("./templates/**/*")
-	// Grouping API routes under /api/v1
+	// Grouping API routes
 	v1 := router.Group("/api/v1")
 	{
 		{
@@ -69,11 +76,13 @@ func main() {
 			{
 				adminRoutes.GET("/dashboard", handler.ShowDashboard)
 				adminRoutes.GET("/login", handler.ShowLoginPage)
-
+				adminRoutes.POST("/login", handler.HandleLogin(db))
 			}
 			{
-				//Testing
-				router.GET("/ping", func(ctx *gin.Context) { ctx.JSON(http.StatusOK, gin.H{"message": "pong"}) })
+				//Testing route
+				router.GET("/ping", func(ctx *gin.Context) {
+					ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
+				})
 			}
 		}
 	}
