@@ -79,6 +79,7 @@ func main() {
 				adminRoutes.POST("/login", handler.HandleLogin(db))
 				// adminRoutes.GET("/logout", handler.Logout)
 				adminRoutes.GET("/programs/new", handler.AuthRequired(), handler.ShowNewProgramForm)
+				adminRoutes.POST("/programs", handler.AuthRequired(), handler.CreateNewProgram(db))
 			}
 			{
 				//Testing route
