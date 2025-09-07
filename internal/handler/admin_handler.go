@@ -11,8 +11,18 @@ import (
 )
 
 // Rendering dashboard
-func ShowDashboard(ctx *gin.Context) {
-	ctx.HTML(http.StatusOK, "dashboard.html", gin.H{"title": "Admin Dashboard"})
+func ShowDashboard(db *gorm.DB) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		// var news []models.News
+		var programs []models.Program
+		// var prices []models.Price
+
+		if err := db.Order("id asc").Find(&programs).Error; err != nil {
+			ctx.String(http.StatusInternalServerError, "Failed to fetch programs")
+			return
+		}
+		ctx.HTML(http.StatusOK, "dashboard.html", gin.H{"Programs": programs})
+	}
 }
 
 // Rendering login page
