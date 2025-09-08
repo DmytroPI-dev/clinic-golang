@@ -90,3 +90,13 @@ func AuthRequired() gin.HandlerFunc {
 		ctx.Next()
 	}
 }
+
+// HandleLogout clears the user's session and redirects to the login page.
+func HandleLogout(ctx *gin.Context) {
+	session := sessions.Default(ctx)
+	session.Clear()
+	session.Save()
+	ctx.Redirect(http.StatusFound, "login")
+}
+
+

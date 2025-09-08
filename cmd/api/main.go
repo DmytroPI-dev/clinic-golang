@@ -77,10 +77,12 @@ func main() {
 				adminRoutes.GET("/dashboard", handler.AuthRequired(), handler.ShowDashboard(db))
 				adminRoutes.GET("/login", handler.ShowLoginPage)
 				adminRoutes.POST("/login", handler.HandleLogin(db))
-				// adminRoutes.GET("/logout", handler.Logout)
-				adminRoutes.GET("/programs/new", handler.AuthRequired(), handler.ShowNewProgramForm)
-				adminRoutes.POST("/programs", handler.AuthRequired(), handler.CreateNewProgram(db))
+				adminRoutes.GET("/logout", handler.HandleLogout)
+				adminRoutes.GET("/programs/new", handler.AuthRequired(), handler.AdminShowNewProgramForm)
+				adminRoutes.POST("/programs", handler.AuthRequired(), handler.AdminCreateNewProgram(db))
 				adminRoutes.DELETE("/programs/:id", handler.AuthRequired(), handler.AdminDeleteProgram(db))
+				adminRoutes.GET("/programs/edit/:id", handler.AuthRequired(), handler.AdminShowEditProgramForm(db))
+				adminRoutes.PUT("/programs/:id", handler.AuthRequired(), handler.AdminUpdateProgram(db))
 
 			}
 			{
