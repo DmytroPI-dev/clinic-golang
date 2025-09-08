@@ -80,6 +80,8 @@ func main() {
 				// adminRoutes.GET("/logout", handler.Logout)
 				adminRoutes.GET("/programs/new", handler.AuthRequired(), handler.ShowNewProgramForm)
 				adminRoutes.POST("/programs", handler.AuthRequired(), handler.CreateNewProgram(db))
+				adminRoutes.DELETE("/programs/:id", handler.AuthRequired(), handler.AdminDeleteProgram(db))
+
 			}
 			{
 				//Testing route
