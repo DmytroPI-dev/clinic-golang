@@ -5,12 +5,13 @@ package main
 import (
 	"errors"
 	"flag"
+	"log"
+
 	"github.com/DmytroPI-dev/clinic-golang/internal/config"
 	"github.com/DmytroPI-dev/clinic-golang/internal/database"
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"log"
 )
 
 func main() {
@@ -42,28 +43,29 @@ func main() {
 	err = db.Where("user_name = ?", *username).First(&existingUser).Error
 	if err == nil {
 		log.Fatalf("Superuser with username '%s' already exists, try another username!", *username)
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Fatalf("Error checking for existing superuser: %s", err)
-		}
-
-		// Hashing the password and creating new superuser
-		log.Println("Creating new superuser...")
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*password), 10)
-		if err != nil {
-			log.Fatalf("Could not hash password: %s", err)
-		}
-
-		// Create new admin user
-		adminUser := models.User{
-			UserName:     *username,
-			PasswordHash: string(hashedPassword),
-			Email:        *email,
-			Role:         cfg.AdminRole,
-		}
-
-		if err := db.Create(&adminUser).Error; err != nil {
-			log.Fatalf("Could not create superuser: %s", err)
-		}
-		log.Println("Superuser created successfully")
 	}
+
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Fatalf("Error checking for existing superuser: %s", err)
+	}
+
+	// Hashing the password and creating new superuser
+	log.Println("Creating new superuser...")
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*password), 10)
+	if err != nil {
+		log.Fatalf("Could not hash password: %s", err)
+	}
+
+	// Create new admin user
+	adminUser := models.User{
+		UserName:     *username,
+		PasswordHash: string(hashedPassword),
+		Email:        *email,
+		Role:         cfg.AdminRole,
+	}
+
+	if err := db.Create(&adminUser).Error; err != nil {
+		log.Fatalf("Could not create superuser: %s", err)
+	}
+	log.Println("Superuser created successfully")
 }
