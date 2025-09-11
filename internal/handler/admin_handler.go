@@ -1,27 +1,28 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"net/http"
 )
 
-// Rendering dashboard
-func ShowDashboard(db *gorm.DB) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		// var news []models.News
+// Rendering programs
+func ShowProgramsPage(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
 		var programs []models.Program
-		// var prices []models.Price
+		db.Order("id asc").Find(&programs)
+		session := sessions.Default(c)
+		username := session.Get("username")
 
-		if err := db.Order("id asc").Find(&programs).Error; err != nil {
-			ctx.String(http.StatusInternalServerError, "Failed to fetch programs")
-			return
-		}
-		ctx.HTML(http.StatusOK, "dashboard.html", gin.H{"Programs": programs})
+		// Render the specific page template. It will handle the layout.
+		c.HTML(http.StatusOK, "programs.html", gin.H{
+			"Title": "Manage Programs",
+			"User":  username,
+			"Items": programs,
+		})
 	}
 }
 
@@ -71,7 +72,7 @@ func HandleLogin(db *gorm.DB) gin.HandlerFunc {
 		session.Save()
 
 		// Redirect to admin dashboard
-		ctx.Redirect(http.StatusFound, "dashboard")
+		ctx.Redirect(http.StatusFound, "programs")
 	}
 }
 
@@ -89,4 +90,12 @@ func AuthRequired() gin.HandlerFunc {
 		}
 		ctx.Next()
 	}
+}
+
+// HandleLogout clears the user's session and redirects to the login page.
+func HandleLogout(ctx *gin.Context) {
+	session := sessions.Default(ctx)
+	session.Clear()
+	session.Save()
+	ctx.Redirect(http.StatusFound, "login")
 }

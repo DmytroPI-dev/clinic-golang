@@ -1,0 +1,30 @@
+{{define "resource_table.html"}}
+<main class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>{{ .ResourceTitle }}</h1>
+        <button class="btn btn-primary" hx-get="/admin/{{ .ResourceName }}s/new" hx-target="#modal-content"
+            data-bs-toggle="modal" data-bs-target="#main-modal">
+            Add New {{ .ResourceName | ToTitle }}
+        </button>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Title</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="{{ .ResourceName }}s-table-body">
+            {{ range .Items }}
+            {{ template "resource_row.html" (Dict "ResourceName" $.ResourceName "Item" .) }}
+            {{ else }}
+            <tr>
+                <td colspan="3" class="text-center">No items found.</td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+</main>
+{{end}}

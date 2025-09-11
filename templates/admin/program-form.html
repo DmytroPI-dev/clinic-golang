@@ -1,33 +1,52 @@
-<form hx-post="/admin/programs" hx-target="#programs-table-body" hx-swap="beforeend"
+{{/* This form now handles both creating and editing */}}
+
+{{/* Set the correct action based on whether we are editing or creating */}}
+{{ $isEdit := .Program.ID }}
+{{ $actionURL := "/admin/programs" }}
+{{ if $isEdit }}
+{{ $actionURL = printf "/admin/programs/%d" .Program.ID }}
+{{ end }}
+
+<form
+ {{ if $isEdit }} 
+    hx-put="{{ $actionURL }}" 
+    hx-target="#program-row-{{ .Program.ID }}" 
+    hx-swap="outerHTML" 
+{{ else }}
+    hx-post="{{ $actionURL }}" 
+    hx-target="#programs-table-body" 
+    hx-swap="beforeend" 
+{{ end }}
     hx-on="htmx:afterOnLoad: this.closest('.modal').querySelector('[data-bs-dismiss]').click()">
+    
     <div class="modal-header">
-        <h5 class="modal-title">Add New Program</h5>
+        <h5 class="modal-title">{{ if $isEdit }}Edit Program{{ else }}Add New Program{{ end }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
         <div class="mb-3">
             <label for="title" class="form-label">Title</label>
-            <input type="text" class="form-control" id="title" name="title" required>
+            <input type="text" class="form-control" name="title" required value="{{ .Program.Title }}">
         </div>
         <div class="mb-3">
             <label for="category" class="form-label">Category</label>
-            <select class="form-select" id="category" name="category">
+            <select class="form-select" name="category">
                 {{ range .Categories }}
-                <option value="{{ . }}">{{ . }}</option>
+                <option value="{{ . }}" {{ if eq . $.Program.Category }}selected{{ end }}>{{ . }}</option>
                 {{ end }}
             </select>
         </div>
         <div class="mb-3">
             <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+            <textarea class="form-control" name="description" rows="3">{{ .Program.Description }}</textarea>
         </div>
         <div class="mb-3">
             <label for="results" class="form-label">Results</label>
-            <textarea class="form-control" id="results" name="results" rows="3"></textarea>
+            <textarea class="form-control" name="results" rows="3">{{ .Program.Results }}</textarea>
         </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary">Save Program</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
     </div>
 </form>
