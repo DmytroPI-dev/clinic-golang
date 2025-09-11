@@ -1,14 +1,29 @@
 package handler
 
 import (
+	"github.com/DmytroPI-dev/clinic-golang/internal/models"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"log"
 	"net/http"
 	"strconv"
-
-	"github.com/DmytroPI-dev/clinic-golang/internal/models"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
+
+// Rendering price page“
+func ShowPricesPage(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var prices []models.Price
+		db.Order("id asc").Find(&prices)
+		session := sessions.Default(c)
+		username := session.Get("username")
+		c.HTML(http.StatusOK, "prices.html", gin.H{
+			"Title": "Manage Prices",
+			"User":  username,
+			"Items": prices,
+		})
+	}
+}
 
 func AdminShowNewPriceForm(ctx *gin.Context) {
 	ctx.HTML(http.StatusOK, "price-form.html", gin.H{
@@ -21,7 +36,7 @@ func AdminShowNewPriceForm(ctx *gin.Context) {
 func AdminCreateNewPrice(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// Parse form data from the request
-		itemName := ctx.PostForm("title")
+		itemName := ctx.PostForm("itemName")
 		category := ctx.PostForm("category")
 		priceStr := ctx.PostForm("price")
 		price, err := strconv.ParseFloat(priceStr, 32)
@@ -105,7 +120,7 @@ func AdminUpdatePrice(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		//Parse data from the request
-		price.ItemName = ctx.PostForm("title")
+		price.ItemName = ctx.PostForm("itemName")
 		priceStr := ctx.PostForm("price")
 		if priceFloat, err := strconv.ParseFloat(priceStr, 32); err != nil {
 			log.Printf("Failed to parse price '%s': %s", priceStr, err)

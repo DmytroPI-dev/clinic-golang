@@ -29,14 +29,13 @@ func loadTemplates() multitemplate.Renderer {
 	}
 
 	layout := adminTpl("layout.html")
-	resourceTable := adminTpl("resource-table.html")
 	programForm := adminTpl("program-form.html")
 	programRow := adminTpl("program-row.html")
 	priceForm := adminTpl("price-form.html")
 	priceRow := adminTpl("price-row.html")
 
-	r.AddFromFilesFuncs("programs.html", funcMap, layout, resourceTable, adminTpl("programs.html"), programForm, programRow)
-	r.AddFromFilesFuncs("prices.html", funcMap, layout, resourceTable, adminTpl("prices.html"), priceForm, priceRow)
+	r.AddFromFilesFuncs("programs.html", funcMap, layout,  adminTpl("programs.html"), programForm, programRow)
+	r.AddFromFilesFuncs("prices.html", funcMap, layout,  adminTpl("prices.html"), priceForm, priceRow)
 
 	// For HTMX partials and standalone pages
 	partials := []string{
