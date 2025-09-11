@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/DmytroPI-dev/clinic-golang/internal/config"
 	"github.com/DmytroPI-dev/clinic-golang/internal/database"
-	"github.com/DmytroPI-dev/clinic-golang/internal/handler"
+	"github.com/DmytroPI-dev/clinic-golang/internal/handlers"
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"github.com/DmytroPI-dev/clinic-golang/internal/utils"
 	"github.com/gin-contrib/multitemplate"
@@ -23,19 +23,27 @@ var funcMap = template.FuncMap{
 
 func loadTemplates() multitemplate.Renderer {
 	r := multitemplate.NewRenderer()
-
+	// creating adminTpl var- subpath to
 	adminTpl := func(name string) string {
 		return "templates/admin/" + name
 	}
 
 	layout := adminTpl("layout.html")
+
+	// Program
 	programForm := adminTpl("program-form.html")
 	programRow := adminTpl("program-row.html")
+	// Price
 	priceForm := adminTpl("price-form.html")
 	priceRow := adminTpl("price-row.html")
+	// // News
+	newsForm := adminTpl("news-form.html")
+	newsRow := adminTpl("news-row.html")
 
-	r.AddFromFilesFuncs("programs.html", funcMap, layout,  adminTpl("programs.html"), programForm, programRow)
-	r.AddFromFilesFuncs("prices.html", funcMap, layout,  adminTpl("prices.html"), priceForm, priceRow)
+	//
+	r.AddFromFilesFuncs("programs.html", funcMap, layout, adminTpl("programs.html"), programForm, programRow)
+	r.AddFromFilesFuncs("prices.html", funcMap, layout, adminTpl("prices.html"), priceForm, priceRow)
+	r.AddFromFilesFuncs("news.html", funcMap, layout, adminTpl("news.html"), newsForm, newsRow)
 
 	// For HTMX partials and standalone pages
 	partials := []string{
@@ -44,6 +52,8 @@ func loadTemplates() multitemplate.Renderer {
 		"program-row.html",
 		"price-form.html",
 		"price-row.html",
+		"news-form.html",
+		"news-row.html",
 	}
 	for _, partial := range partials {
 		r.AddFromFilesFuncs(partial, funcMap, adminTpl(partial))
@@ -72,8 +82,8 @@ func registerCrudRoutes(group *gin.RouterGroup, db *gorm.DB, handlers CrudHandle
 
 // AdminCrudHandlers defines a set of handlers for an admin panel resource.
 type AdminCrudHandlers struct {
-	ShowPage     func(*gorm.DB) gin.HandlerFunc
 	ShowNewForm  gin.HandlerFunc
+	ShowPage     func(*gorm.DB) gin.HandlerFunc
 	Create       func(*gorm.DB) gin.HandlerFunc
 	ShowEditForm func(*gorm.DB) gin.HandlerFunc
 	Update       func(*gorm.DB) gin.HandlerFunc
@@ -112,6 +122,7 @@ func main() {
 
 	// Creating Gin router
 	router := gin.Default()
+	router.Static("/static", "./static")
 
 	router.SetFuncMap(funcMap)
 	// Setting up session store
@@ -180,6 +191,14 @@ func main() {
 				ShowEditForm: handler.AdminShowEditPriceForm,
 				Update:       handler.AdminUpdatePrice,
 				Delete:       handler.AdminDeletePrice,
+			})
+			registerAdminCrudRoutes(authenticated.Group("/news"), db, AdminCrudHandlers{
+				ShowPage:     handler.ShowNewsPage,
+				ShowNewForm:  handler.AdminShowNewsForm,
+				Create:       handler.AdminCreateNews,
+				ShowEditForm: handler.AdminShowEditNews,
+				Update:       handler.AdminUpdateNews,
+				Delete:       handler.AdminDeleteNews,
 			})
 		}
 	}

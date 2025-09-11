@@ -42,3 +42,6 @@ Thumbs.db
 # Logs and databases
 *.log
 *.db
+
+# Static files
+static/

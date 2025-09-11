@@ -1,0 +1,55 @@
+{{/* This form now handles both creating and editing */}}
+
+{{/* Set the correct action based on whether we are editing or creating */}}
+{{ $isEdit := .News.ID }}
+{{ $actionURL := "/admin/news" }}
+{{ if $isEdit }}
+{{ $actionURL = printf "/admin/news/%d" .News.ID }}
+{{ end }}
+
+<form enctype="multipart/form-data" {{ if $isEdit }} hx-put="{{ $actionURL }}" hx-target="#news-row-{{ .News.ID }}"
+    hx-swap="outerHTML" {{ else }} hx-post="{{ $actionURL }}" hx-target="#news-table-body" hx-swap="beforeend" {{ end }}
+    hx-on="htmx:afterOnLoad: this.closest('.modal').querySelector('[data-bs-dismiss]').click()">
+
+    <div class="modal-header">
+        <h5 class="modal-title">{{ if $isEdit }}Edit News{{ else }}Add News {{ end }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" name="title" required value="{{ .News.Title }}">
+        </div>
+        <div class="mb-3">
+            <label for="header" class="form-label">Header</label>
+            <input type="text" class="form-control" name="header" required value="{{ .News.Header }}">
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <input type="text" class="form-control" name="description" required value="{{ .News.Description }}">
+        </div>
+        <div class="mb-3">
+            <label for="features" class="form-label">Features</label>
+            <input type="text" class="form-control" name="features" required value="{{ .News.Features }}">
+        </div>
+        <div class="mb-3">
+            <label for="image_left" class="form-label">Left Image</label>
+            {{ if .News.ImageLeft }}
+            <img src="{{ .News.ImageLeft  }}" alt="Current Left Image" width="100" class="d-block mb-2">
+            {{ end }}
+            <input type="file" class="form-control" name="image_left" {{ if not $isEdit }}required{{ end }}>
+        </div>
+        <div class="mb-3">
+            <label for="image_right" class="form-label">Right Image</label>
+            {{ if .News.ImageRight }}
+            <img src="{{ .News.ImageRight  }}" alt="Current Right Image" width="100" class="d-block mb-2">
+            {{ end }}
+            <input type="file" class="form-control" name="image_right" {{ if not $isEdit }}required{{ end }}>
+        </div>
+
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </div>
+</form>
