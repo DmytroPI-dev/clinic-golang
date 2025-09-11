@@ -99,3 +99,17 @@ func HandleLogout(ctx *gin.Context) {
 	session.Save()
 	ctx.Redirect(http.StatusFound, "login")
 }
+
+func ShowPricesPage(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var prices []models.Price
+		db.Order("id asc").Find(&prices)
+		session := sessions.Default(c)
+		username := session.Get("username")
+		c.HTML(http.StatusOK, "prices.html", gin.H{
+			"Title": "Manage Prices",
+			"User":  username,
+			"Items": prices,
+		})
+	}
+}

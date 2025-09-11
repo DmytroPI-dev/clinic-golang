@@ -3,10 +3,10 @@
 {{define "content"}}
 <main class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Manage Programs</h1>
-        <button class="btn btn-primary" hx-get="/admin/programs/new" hx-target="#modal-content" data-bs-toggle="modal"
+        <h1>Manage Pricelist</h1>
+        <button class="btn btn-primary" hx-get="/admin/prices/new" hx-target="#modal-content" data-bs-toggle="modal"
             data-bs-target="#main-modal">
-            Add New Program
+            Add New pricelist position
         </button>
     </div>
 
@@ -14,15 +14,15 @@
         <thead class="table-dark">
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Title</th>
-                <th scope="col">Description</th>
+                <th scope="col">Item Name</th>
                 <th scope="col">Category</th>
+                <th scope="col">Price</th>
                 <th scope="col">Actions</th>
             </tr>
         </thead>
-        <tbody id="programs-table-body" style="counter-reset: row-num;">
+        <tbody id="prices-table-body" style="counter-reset: row-num;">
             {{ range .Items }}
-            {{ template "program-row.html" . }}
+            {{ template "price-row.html" . }}
             {{ else }}
             <tr>
                 <td colspan="5" class="text-center">No items found.</td>

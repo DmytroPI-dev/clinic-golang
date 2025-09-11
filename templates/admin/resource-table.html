@@ -4,7 +4,7 @@
         <h1>{{ .ResourceTitle }}</h1>
         <button class="btn btn-primary" hx-get="/admin/{{ .ResourceName }}s/new" hx-target="#modal-content"
             data-bs-toggle="modal" data-bs-target="#main-modal">
-            Add New {{ .ResourceName | ToTitle }}
+            Add New {{ .ResourceName }}
         </button>
     </div>
 
