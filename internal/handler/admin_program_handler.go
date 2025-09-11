@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"log"
@@ -13,6 +14,23 @@ func AdminShowNewProgramForm(ctx *gin.Context) {
 	ctx.HTML(http.StatusOK, "program-form.html", gin.H{
 		"Categories": models.AllCategories,
 	})
+}
+
+// Rendering programs
+func ShowProgramsPage(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var programs []models.Program
+		db.Order("id asc").Find(&programs)
+		session := sessions.Default(c)
+		username := session.Get("username")
+
+		// Render the specific page template. It will handle the layout.
+		c.HTML(http.StatusOK, "programs.html", gin.H{
+			"Title": "Manage Programs",
+			"User":  username,
+			"Items": programs,
+		})
+	}
 }
 
 // Create new program template
@@ -120,5 +138,3 @@ func AdminUpdateProgram(db *gorm.DB) gin.HandlerFunc {
 		ctx.HTML(http.StatusOK, "program-row.html", program)
 	}
 }
-
-

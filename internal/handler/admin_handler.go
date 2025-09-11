@@ -9,22 +9,6 @@ import (
 	"net/http"
 )
 
-// Rendering programs
-func ShowProgramsPage(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var programs []models.Program
-		db.Order("id asc").Find(&programs)
-		session := sessions.Default(c)
-		username := session.Get("username")
-
-		// Render the specific page template. It will handle the layout.
-		c.HTML(http.StatusOK, "programs.html", gin.H{
-			"Title": "Manage Programs",
-			"User":  username,
-			"Items": programs,
-		})
-	}
-}
 
 // Rendering login page
 func ShowLoginPage(ctx *gin.Context) {
@@ -54,7 +38,7 @@ func HandleLogin(db *gorm.DB) gin.HandlerFunc {
 			session.AddFlash("Invalid username or password", "error")
 			session.Save()
 			// Redirect to login
-			ctx.Redirect(http.StatusFound, "login")
+			ctx.Redirect(http.StatusFound, "/admin/login")
 			return
 		}
 		// Check password and hash
@@ -63,7 +47,7 @@ func HandleLogin(db *gorm.DB) gin.HandlerFunc {
 			// Password do not match
 			session.AddFlash("Invalid username or password", "error")
 			session.Save()
-			ctx.Redirect(http.StatusFound, "login")
+			ctx.Redirect(http.StatusFound, "/admin/login")
 			return
 		}
 		// Create session
@@ -72,7 +56,7 @@ func HandleLogin(db *gorm.DB) gin.HandlerFunc {
 		session.Save()
 
 		// Redirect to admin dashboard
-		ctx.Redirect(http.StatusFound, "programs")
+		ctx.Redirect(http.StatusFound, "/admin/programs")
 	}
 }
 
@@ -85,7 +69,7 @@ func AuthRequired() gin.HandlerFunc {
 		if userID == nil {
 			// Aborting request and redirecting to login page
 			ctx.Abort()
-			ctx.Redirect(http.StatusFound, "login")
+			ctx.Redirect(http.StatusFound, "/admin/login")
 			return
 		}
 		ctx.Next()
@@ -97,19 +81,6 @@ func HandleLogout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	session.Clear()
 	session.Save()
-	ctx.Redirect(http.StatusFound, "login")
+	ctx.Redirect(http.StatusFound, "/admin/login")
 }
 
-func ShowPricesPage(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var prices []models.Price
-		db.Order("id asc").Find(&prices)
-		session := sessions.Default(c)
-		username := session.Get("username")
-		c.HTML(http.StatusOK, "prices.html", gin.H{
-			"Title": "Manage Prices",
-			"User":  username,
-			"Items": prices,
-		})
-	}
-}
