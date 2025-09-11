@@ -1,0 +1,35 @@
+{{template "layout.html" .}}
+
+{{define "content"}}
+<main class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Manage News</h1>
+        <button class="btn btn-primary" hx-get="/admin/news/new" hx-target="#modal-content" data-bs-toggle="modal"
+            data-bs-target="#main-modal">
+            Add some News
+        </button>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Title</th>
+                <th scope="col">Header</th>
+                <th scope="col">Description</th>
+                <th scope="col">Features</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="news-table-body" style="counter-reset: row-num;">
+            {{ range .Items }}
+            {{ template "news-row.html" . }}
+            {{ else }}
+            <tr>
+                <td colspan="5" class="text-center">No items found.</td>
+            </tr>
+            {{ end }}
+        </tbody>
+    </table>
+</main>
+{{end}}
