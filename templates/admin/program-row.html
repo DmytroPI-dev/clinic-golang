@@ -1,7 +1,9 @@
 <tr id="program-row-{{ .ID }}">
-    <th scope="row">{{ .ID }}</th>
+    <th scope="row" class="row-counter"></th>
     <td>{{ .Title }}</td>
-       <td>
+    <td>{{ .Description }}</td>
+    <td>{{ .Category }}</td>
+    <td>
         <button class="btn btn-sm btn-secondary" hx-get="/admin/programs/edit/{{ .ID }}" hx-target="#modal-content"
             data-bs-toggle="modal" data-bs-target="#main-modal">
             Edit
