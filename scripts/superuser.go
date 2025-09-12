@@ -1,28 +1,27 @@
 package main
 
-// usage go run ./scripts/superuser -user=new_admin_username -password=a_very_strong_password -email=your@email.com
+// usage go run ./scripts/superuser -user=new_admin_userName -password=a_very_strong_password -email=your@email.com
 
 import (
 	"errors"
 	"flag"
-	"log"
-
 	"github.com/DmytroPI-dev/clinic-golang/internal/config"
 	"github.com/DmytroPI-dev/clinic-golang/internal/database"
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"log"
 )
 
 func main() {
 	// Define and parse CLI flags for superuser, password, email
-	username := flag.String("user", "", "Username for the superuser")
+	userName := flag.String("user", "", "Username for the superuser")
 	password := flag.String("password", "", "Password for the superuser")
 	email := flag.String("email", "", "Email for the superuser")
 	flag.Parse()
 
-	if *username == "" || *password == "" || *email == "" {
-		log.Fatal("Superusername, password, and email are required")
+	if *userName == "" || *password == "" || *email == "" {
+		log.Fatal("SuperuserName, password, and email are required")
 	}
 
 	// Loading config
@@ -40,9 +39,9 @@ func main() {
 
 	// Check if user exists
 	var existingUser models.User
-	err = db.Where("user_name = ?", *username).First(&existingUser).Error
+	err = db.Where("user_name = ?", *userName).First(&existingUser).Error
 	if err == nil {
-		log.Fatalf("Superuser with username '%s' already exists, try another username!", *username)
+		log.Fatalf("Superuser with userName '%s' already exists, try another userName!", *userName)
 	}
 
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -58,7 +57,7 @@ func main() {
 
 	// Create new admin user
 	adminUser := models.User{
-		UserName:     *username,
+		UserName:     *userName,
 		PasswordHash: string(hashedPassword),
 		Email:        *email,
 		Role:         cfg.AdminRole,
