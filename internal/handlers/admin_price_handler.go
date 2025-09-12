@@ -16,11 +16,13 @@ func ShowPricesPage(db *gorm.DB) gin.HandlerFunc {
 		var prices []models.Price
 		db.Order("id asc").Find(&prices)
 		session := sessions.Default(c)
-		username := session.Get("username")
+		userName := session.Get("userName")
+		userRole := session.Get("userRole")
 		c.HTML(http.StatusOK, "prices.html", gin.H{
-			"Title": "Manage Prices",
-			"User":  username,
-			"Items": prices,
+			"Title":    "Manage Prices",
+			"User":     userName,
+			"UserRole": userRole,
+			"Items":    prices,
 		})
 	}
 }

@@ -2,14 +2,13 @@ package handler
 
 import (
 	"errors"
-	"log"
-	"net/http"
-
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"log"
+	"net/http"
 )
 
 // Render users page
@@ -24,16 +23,18 @@ func ShowUserPage(db *gorm.DB) gin.HandlerFunc {
 		}
 		// Get session data
 		session := sessions.Default(ctx)
-		username := session.Get("username")
+		userName := session.Get("userName")
+		userRole := session.Get("userRole")
 		flashes := session.Flashes("error")
 		if err := session.Save(); err != nil {
 			log.Printf("Failed to save session to clear flashes: %s", err)
 		}
 
 		renderData := gin.H{
-			"Title": "Manage Users",
-			"User":  username,
-			"Items": users,
+			"Title":    "Manage Users",
+			"User":     userName,
+			"UserRole": userRole,
+			"Items":    users,
 		}
 		if len(flashes) > 0 {
 			renderData["error"] = flashes[0]

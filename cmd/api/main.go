@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/DmytroPI-dev/clinic-golang/internal/config"
 	"github.com/DmytroPI-dev/clinic-golang/internal/database"
-	"github.com/DmytroPI-dev/clinic-golang/internal/handlers"
+	handler "github.com/DmytroPI-dev/clinic-golang/internal/handlers"
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"github.com/DmytroPI-dev/clinic-golang/internal/utils"
 	"github.com/gin-contrib/multitemplate"
@@ -42,12 +42,15 @@ func loadTemplates() multitemplate.Renderer {
 	// Users
 	usersRow := adminTpl("user-row.html")
 	usersForm := adminTpl("user-form.html")
+	// Access forbidden
+	forbidden := adminTpl("403.html")
 
 	// Configure HTML template rendering
 	renderer.AddFromFilesFuncs("programs.html", funcMap, layout, adminTpl("programs.html"), programForm, programRow)
 	renderer.AddFromFilesFuncs("prices.html", funcMap, layout, adminTpl("prices.html"), priceForm, priceRow)
 	renderer.AddFromFilesFuncs("news.html", funcMap, layout, adminTpl("news.html"), newsForm, newsRow)
 	renderer.AddFromFilesFuncs("users.html", funcMap, layout, adminTpl("users.html"), usersForm, usersRow)
+	renderer.AddFromFilesFuncs("403.html", funcMap, layout, forbidden)
 
 	// For HTMX partials and standalone pages
 	partials := []string{
@@ -180,38 +183,53 @@ func main() {
 				c.Redirect(http.StatusFound, "/admin/programs")
 			})
 
-			// Admin CRUD pages
-			registerAdminCrudRoutes(authenticated.Group("/programs"), db, AdminCrudHandlers{
-				ShowPage:     handler.ShowProgramsPage,
-				ShowNewForm:  handler.AdminShowNewProgramForm,
-				Create:       handler.AdminCreateNewProgram,
-				ShowEditForm: handler.AdminShowEditProgramForm,
-				Update:       handler.AdminUpdateProgram,
-				Delete:       handler.AdminDeleteProgram,
-			})
-			registerAdminCrudRoutes(authenticated.Group("/prices"), db, AdminCrudHandlers{
-				ShowPage:     handler.ShowPricesPage,
-				ShowNewForm:  handler.AdminShowNewPriceForm,
-				Create:       handler.AdminCreateNewPrice,
-				ShowEditForm: handler.AdminShowEditPriceForm,
-				Update:       handler.AdminUpdatePrice,
-				Delete:       handler.AdminDeletePrice,
-			})
-			registerAdminCrudRoutes(authenticated.Group("/news"), db, AdminCrudHandlers{
-				ShowPage:     handler.ShowNewsPage,
-				ShowNewForm:  handler.AdminShowNewsForm,
-				Create:       handler.AdminCreateNews,
-				ShowEditForm: handler.AdminShowEditNews,
-				Update:       handler.AdminUpdateNews,
-				Delete:       handler.AdminDeleteNews,
-			})
-			registerAdminCrudRoutes(authenticated.Group("/users"), db, AdminCrudHandlers{
-				ShowPage: handler.ShowUserPage,
-				ShowNewForm: handler.AdminShowNewUserForm,
-				Create: handler.AdminCreateUser,
+			// Admin CRUD pages with Role-Based Access Control
+			// Programs: Readers can view, Editors/Admins can modify.
+			programsGroup := authenticated.Group("/programs")
+			programsGroup.GET("/", handler.RoleRequired(models.Admin, models.Editor, models.Reader), handler.ShowProgramsPage(db))
+			programsGroup.Use(handler.RoleRequired(models.Admin, models.Editor))
+			{
+				programsGroup.GET("/new", handler.AdminShowNewProgramForm)
+				programsGroup.POST("/", handler.AdminCreateNewProgram(db))
+				programsGroup.GET("/edit/:id", handler.AdminShowEditProgramForm(db))
+				programsGroup.PUT("/:id", handler.AdminUpdateProgram(db))
+				programsGroup.DELETE("/:id", handler.AdminDeleteProgram(db))
+			}
+
+			// Prices: Readers can view, Editors/Admins can modify.
+			pricesGroup := authenticated.Group("/prices")
+			pricesGroup.GET("/", handler.RoleRequired(models.Admin, models.Editor, models.Reader), handler.ShowPricesPage(db))
+			pricesGroup.Use(handler.RoleRequired(models.Admin, models.Editor))
+			{
+				pricesGroup.GET("/new", handler.AdminShowNewPriceForm)
+				pricesGroup.POST("/", handler.AdminCreateNewPrice(db))
+				pricesGroup.GET("/edit/:id", handler.AdminShowEditPriceForm(db))
+				pricesGroup.PUT("/:id", handler.AdminUpdatePrice(db))
+				pricesGroup.DELETE("/:id", handler.AdminDeletePrice(db))
+			}
+
+			// News: Readers can view, Editors/Admins can modify.
+			newsGroup := authenticated.Group("/news")
+			newsGroup.GET("/", handler.RoleRequired(models.Admin, models.Editor, models.Reader), handler.ShowNewsPage(db))
+			newsGroup.Use(handler.RoleRequired(models.Admin, models.Editor))
+			{
+				newsGroup.GET("/new", handler.AdminShowNewsForm)
+				newsGroup.POST("/", handler.AdminCreateNews(db))
+				newsGroup.GET("/edit/:id", handler.AdminShowEditNews(db))
+				newsGroup.PUT("/:id", handler.AdminUpdateNews(db))
+				newsGroup.DELETE("/:id", handler.AdminDeleteNews(db))
+			}
+
+			// Users: Only Admins can manage users.
+			usersGroup := authenticated.Group("/users")
+			usersGroup.Use(handler.RoleRequired(models.Admin))
+			registerAdminCrudRoutes(usersGroup, db, AdminCrudHandlers{
+				ShowPage:     handler.ShowUserPage,
+				ShowNewForm:  handler.AdminShowNewUserForm,
+				Create:       handler.AdminCreateUser,
 				ShowEditForm: handler.AdminShowEditUserForm,
-				Update: handler.AdminUpdateUser,
-				Delete: handler.AdminDeleteUser,
+				Update:       handler.AdminUpdateUser,
+				Delete:       handler.AdminDeleteUser,
 			})
 		}
 

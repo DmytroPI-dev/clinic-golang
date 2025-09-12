@@ -22,13 +22,15 @@ func ShowProgramsPage(db *gorm.DB) gin.HandlerFunc {
 		var programs []models.Program
 		db.Order("id asc").Find(&programs)
 		session := sessions.Default(c)
-		username := session.Get("username")
+		userName := session.Get("userName")
+		userRole := session.Get("userRole")
 
 		// Render the specific page template. It will handle the layout.
 		c.HTML(http.StatusOK, "programs.html", gin.H{
-			"Title": "Manage Programs",
-			"User":  username,
-			"Items": programs,
+			"Title":    "Manage Programs",
+			"User":     userName,
+			"UserRole": userRole,
+			"Items":    programs,
 		})
 	}
 }
