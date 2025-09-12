@@ -5,13 +5,12 @@ package main
 import (
 	"errors"
 	"flag"
-	"log"
-
 	"github.com/DmytroPI-dev/clinic-golang/internal/config"
 	"github.com/DmytroPI-dev/clinic-golang/internal/database"
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"log"
 )
 
 func main() {

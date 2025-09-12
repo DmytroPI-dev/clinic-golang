@@ -22,7 +22,7 @@ var funcMap = template.FuncMap{
 }
 
 func loadTemplates() multitemplate.Renderer {
-	r := multitemplate.NewRenderer()
+	renderer := multitemplate.NewRenderer()
 	// creating adminTpl var- subpath to
 	adminTpl := func(name string) string {
 		return "templates/admin/" + name
@@ -36,14 +36,18 @@ func loadTemplates() multitemplate.Renderer {
 	// Price
 	priceForm := adminTpl("price-form.html")
 	priceRow := adminTpl("price-row.html")
-	// // News
+	// News
 	newsForm := adminTpl("news-form.html")
 	newsRow := adminTpl("news-row.html")
+	// Users
+	usersRow := adminTpl("user-row.html")
+	usersForm := adminTpl("user-form.html")
 
-	//
-	r.AddFromFilesFuncs("programs.html", funcMap, layout, adminTpl("programs.html"), programForm, programRow)
-	r.AddFromFilesFuncs("prices.html", funcMap, layout, adminTpl("prices.html"), priceForm, priceRow)
-	r.AddFromFilesFuncs("news.html", funcMap, layout, adminTpl("news.html"), newsForm, newsRow)
+	// Configure HTML template rendering
+	renderer.AddFromFilesFuncs("programs.html", funcMap, layout, adminTpl("programs.html"), programForm, programRow)
+	renderer.AddFromFilesFuncs("prices.html", funcMap, layout, adminTpl("prices.html"), priceForm, priceRow)
+	renderer.AddFromFilesFuncs("news.html", funcMap, layout, adminTpl("news.html"), newsForm, newsRow)
+	renderer.AddFromFilesFuncs("users.html", funcMap, layout, adminTpl("users.html"), usersForm, usersRow)
 
 	// For HTMX partials and standalone pages
 	partials := []string{
@@ -54,12 +58,13 @@ func loadTemplates() multitemplate.Renderer {
 		"price-row.html",
 		"news-form.html",
 		"news-row.html",
+		"user-row.html",
+		"user-form.html",
 	}
 	for _, partial := range partials {
-		r.AddFromFilesFuncs(partial, funcMap, adminTpl(partial))
+		renderer.AddFromFilesFuncs(partial, funcMap, adminTpl(partial))
 	}
-
-	return r
+	return renderer
 }
 
 // CrudHandlers defines a set of handlers for a standard RESTful resource.
@@ -200,17 +205,25 @@ func main() {
 				Update:       handler.AdminUpdateNews,
 				Delete:       handler.AdminDeleteNews,
 			})
+			registerAdminCrudRoutes(authenticated.Group("/users"), db, AdminCrudHandlers{
+				ShowPage: handler.ShowUserPage,
+				ShowNewForm: handler.AdminShowNewUserForm,
+				Create: handler.AdminCreateUser,
+				ShowEditForm: handler.AdminShowEditUserForm,
+				Update: handler.AdminUpdateUser,
+				Delete: handler.AdminDeleteUser,
+			})
 		}
+
+		//Testing route
+		router.GET("/ping", func(ctx *gin.Context) {
+			ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
+		})
+
+		// Start server
+		serverAddress := "localhost:" + cfg.ServerPort
+		log.Printf("Starting server on %s", serverAddress)
+		router.Run(serverAddress)
+
 	}
-
-	//Testing route
-	router.GET("/ping", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
-	})
-
-	// Start server
-	serverAddress := "localhost:" + cfg.ServerPort
-	log.Printf("Starting server on %s", serverAddress)
-	router.Run(serverAddress)
-
 }

@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-// Rendering price page“
+// Rendering price page
 func ShowPricesPage(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var prices []models.Price

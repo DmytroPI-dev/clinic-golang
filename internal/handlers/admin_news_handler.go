@@ -1,14 +1,13 @@
 package handler
 
 import (
-	"log"
-	"net/http"
-
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"github.com/DmytroPI-dev/clinic-golang/internal/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"log"
+	"net/http"
 )
 
 // Rendering news page“
@@ -16,8 +15,10 @@ func ShowNewsPage(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var News []models.News
 		db.Order("id asc").Find(&News)
+		// Get session data
 		session := sessions.Default(c)
 		username := session.Get("username")
+		// Render template
 		c.HTML(http.StatusOK, "news.html", gin.H{
 			"Title": "Manage News",
 			"User":  username,
