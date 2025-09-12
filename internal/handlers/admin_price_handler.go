@@ -1,13 +1,15 @@
 package handler
 
 import (
+	"errors"
+	"log"
+	"net/http"
+	"strconv"
+
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log"
-	"net/http"
-	"strconv"
 )
 
 // Rendering price page
@@ -94,8 +96,12 @@ func AdminShowEditPriceForm(db *gorm.DB) gin.HandlerFunc {
 		var price models.Price
 		if err := db.First(&price, id).Error; err != nil {
 			// Handle the case where no record found
-			log.Printf("Failed to find price with ID %s: %s", id, err)
-			ctx.Status(http.StatusNotFound)
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				ctx.HTML(http.StatusNotFound, "404.html", gin.H{"Title": "Not Found"})
+			} else {
+				log.Printf("Failed to find price with ID %s: %s", id, err)
+				ctx.Status(http.StatusNotFound)
+			}
 			return
 		}
 		// Render the edit form with the price data
