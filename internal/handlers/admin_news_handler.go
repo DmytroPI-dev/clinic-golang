@@ -1,13 +1,15 @@
 package handler
 
 import (
+	"errors"
+	"log"
+	"net/http"
+
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"github.com/DmytroPI-dev/clinic-golang/internal/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log"
-	"net/http"
 )
 
 // Rendering news page“
@@ -123,8 +125,12 @@ func AdminShowEditNews(db *gorm.DB) gin.HandlerFunc {
 		var news models.News
 		if err := db.First(&news, id).Error; err != nil {
 			// Handle the case where no record found
-			log.Printf("Failed to find news with ID %s: %s", id, err)
-			ctx.Status(http.StatusNotFound)
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				ctx.HTML(http.StatusNotFound, "404.html", gin.H{"Title": "Not Found"})
+			} else {
+				log.Printf("Failed to find news with ID %s: %s", id, err)
+				ctx.Status(http.StatusNotFound)
+			}
 			return
 		}
 		// Render the edit form with the news data

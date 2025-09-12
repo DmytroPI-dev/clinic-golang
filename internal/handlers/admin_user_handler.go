@@ -2,13 +2,14 @@ package handler
 
 import (
 	"errors"
+	"log"
+	"net/http"
+
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"log"
-	"net/http"
 )
 
 // Render users page
@@ -153,15 +154,19 @@ func AdminShowEditUserForm(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// Get ID from the URL
 		id := ctx.Param("id")
-		// Find the news in the database
+		// Find the user in the database
 		var user models.User
 		if err := db.First(&user, id).Error; err != nil {
 			// Handle the case where no record found
-			log.Printf("Failed to find User with ID %s: %s", id, err)
-			ctx.Status(http.StatusNotFound)
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				ctx.HTML(http.StatusNotFound, "404.html", gin.H{"Title": "Not Found"})
+			} else {
+				log.Printf("Failed to find User with ID %s: %s", id, err)
+				ctx.Status(http.StatusNotFound)
+			}
 			return
 		}
-		// Render the edit form with the news data
+		// Render the edit form with the user data
 		ctx.HTML(http.StatusOK, "user-form.html", gin.H{
 			"User":  user,
 			"Roles": models.AllRoles,
