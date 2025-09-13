@@ -1,21 +1,22 @@
 package handler
 
 import (
-	"github.com/DmytroPI-dev/clinic-golang/internal/models"
+	"net/http"
+
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 type PriceResponse struct {
-    // We use json tags to change the output field names
-    ID         uint    `json:"pk"`
-    ItemName   string  `json:"position"`
-    ItemNameEN string  `json:"position_en"`
-    ItemNamePL string  `json:"position_pl"`
-    ItemNameUK string  `json:"position_uk"`
-    Price      float32 `json:"price,string"` // The ",string" option formats the number as a string
-    Category   string  `json:"category"`
+	// We use json tags to change the output field names
+	ID         uint    `json:"pk"`
+	ItemName   string  `json:"position"`
+	ItemNameEN string  `json:"position_en"`
+	ItemNamePL string  `json:"position_pl"`
+	ItemNameUK string  `json:"position_uk"`
+	Price      float32 `json:"price,string"` // The ",string" option formats the number as a string
+	Category   string  `json:"category"`
 }
 
 func ListPrices(db *gorm.DB) gin.HandlerFunc {

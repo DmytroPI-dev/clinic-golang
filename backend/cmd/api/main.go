@@ -4,14 +4,13 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"path/filepath"
 	"strings"
 
-	"github.com/DmytroPI-dev/clinic-golang/internal/config"
-	"github.com/DmytroPI-dev/clinic-golang/internal/database"
-	handler "github.com/DmytroPI-dev/clinic-golang/internal/handlers"
-	"github.com/DmytroPI-dev/clinic-golang/internal/models"
-	"github.com/DmytroPI-dev/clinic-golang/internal/utils"
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/config"
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/database"
+	handler "github.com/DmytroPI-dev/clinic-golang/backend/internal/handlers"
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/models"
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/utils"
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -28,7 +27,7 @@ func loadTemplates() multitemplate.Renderer {
 	renderer := multitemplate.NewRenderer()
 	// creating adminTpl var- subpath to
 	adminTpl := func(name string) string {
-		return "templates/admin/" + name
+		return "backend/templates/admin/" + name
 	}
 
 	layout := adminTpl("layout.html")
@@ -134,7 +133,7 @@ func main() {
 	// Creating Gin router
 	router := gin.Default()
 	// uploaded photos
-	router.Static("/uploads", "./uploads")
+	router.Static("/uploads", "./backend/uploads")
 	// Serve frontend static files from the 'frontend/static' directory under a unique path
 	router.Static("/static", "./frontend/static")
 	// Serve frontend static files from the 'web/static' directory under a unique path
@@ -246,23 +245,23 @@ func main() {
 			ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
 		})
 
-		router.NoRoute(func(c *gin.Context) {
-			path := c.Request.URL.Path
+		router.NoRoute(func(ctx *gin.Context) {
+			path := ctx.Request.URL.Path
 			// For API routes that are not found, return a JSON 404.
 			if strings.HasPrefix(path, "/api/") {
-				c.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
+				ctx.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
 				return
 			}
 
 			// For any unmatched admin routes, or for requests to non-existent static files,
 			// serve the custom 404 page.
-			if strings.HasPrefix(path, "/admin/") || filepath.Ext(path) != "" {
-				c.File("./web/templates/404.html")
-			} else {
-				// For all other routes, assume it's a path
-				// for the React single-page application and serve its entry point.
-				c.File("./frontend/index.html")
-			}
+			// if strings.HasPrefix(path, "/admin/") || filepath.Ext(path) != "" {
+			// 	ctx.File("./web/templates/404.html")
+			// } else {
+			// 	// For all other routes, assume it's a path
+			// 	// for the React single-page application and serve its entry point.
+			ctx.File("./frontend/index.html")
+			// }
 		})
 
 		// Start server

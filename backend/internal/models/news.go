@@ -1,8 +1,8 @@
 package models
 
 import (
-	"time"
 	"gorm.io/gorm"
+	"time"
 )
 
 // News struct corresponds to News model in Django project
@@ -10,11 +10,11 @@ import (
 
 type News struct {
 	gorm.Model
-	Title       string `gorm:"size:250;unique" form:"title"`
-	Header      string `gorm:"type:text" form:"header"`
-	Description string `gorm:"type:text" form:"description"`
-	Features    string `gorm:"type:text" form:"features"`
-	PostedOn    time.Time
+	Title       string    `gorm:"size:250;unique" form:"title"`
+	Header      string    `gorm:"type:text" form:"header"`
+	Description string    `gorm:"type:text" form:"description"`
+	Features    string    `gorm:"type:text" form:"features"`
+	PostedOn    time.Time `gorm:"type:date" form:"posted_on" time_format:"2006-01-02"`
 	// Translation fields for Polish language
 	TitlePL       string `gorm:"size:250;column:title_pl" form:"title_pl"`
 	DescriptionPL string `gorm:"type:text;column:description_pl" form:"description_pl"`

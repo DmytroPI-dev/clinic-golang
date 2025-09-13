@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/DmytroPI-dev/clinic-golang/internal/models"
-	"github.com/DmytroPI-dev/clinic-golang/internal/utils"
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/models"
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -114,7 +114,7 @@ func ListNews(db *gorm.DB) gin.HandlerFunc {
 		if ctx.Request.TLS != nil {
 			scheme = "https"
 		}
-		host := ctx.Request.Host	
+		host := ctx.Request.Host
 		baseURL := fmt.Sprintf("%s://%s/api/v1/news?limit=%d", scheme, host, limit)
 
 		if int64(page)*int64(limit) < count {
@@ -201,7 +201,7 @@ func CreateNews(db *gorm.DB) gin.HandlerFunc {
 			TitleUK:       request.Title,
 			HeaderUK:      request.Header,
 			DescriptionUK: request.Description,
-			FeaturesUK:    request.Features,
+			FeaturesUK:    request.Features,			
 		}
 		// 2. Create news record in the database.
 		if err := db.Create(&singleNews).Error; err != nil {

@@ -2,10 +2,10 @@ package utils
 
 import (
 	"fmt"
-	"github.com/disintegration/imaging"
 	"mime/multipart"
 	"path/filepath"
 	"time"
+	"github.com/disintegration/imaging"
 )
 
 // ProcessAndSaveImage handles uploading, resizing, and saving an image.
@@ -27,16 +27,20 @@ func ProcessAndSaveImages(file *multipart.FileHeader) (string, error) {
 	// Resizing image to max width 800px, preserving aspect ratio
 	resized := imaging.Resize(img, 800, 0, imaging.Lanczos)
 
-	// Create unique name
+	// Create a unique name for the file to avoid collisions.
 	uniqueFileName := fmt.Sprintf("%d%s", time.Now().Unix(), filepath.Base(file.Filename))
-	savePath := filepath.Join("uploads", uniqueFileName)
 
-	// Save resized image
+	// Define the filesystem path for saving the image.
+	// This will be relative to the application's execution directory, e.g., "uploads/image.jpg"
+	savePath := filepath.Join("./backend/uploads", uniqueFileName)
+
+	// Save the resized image to the filesystem.
 	err = imaging.Save(resized, savePath)
 	if err != nil {
 		return "", err
 	}
 
-	return "/" + savePath, nil
-
+	// Return the public URL path that the frontend will use, e.g., "/uploads/image.jpg"
+	// We use filepath.ToSlash to ensure forward slashes are used in the URL, which is important for cross-platform compatibility.
+	return filepath.ToSlash(filepath.Join("/", "uploads", uniqueFileName)), nil
 }

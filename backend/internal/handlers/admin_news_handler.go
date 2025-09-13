@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/DmytroPI-dev/clinic-golang/internal/models"
-	"github.com/DmytroPI-dev/clinic-golang/internal/utils"
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/models"
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

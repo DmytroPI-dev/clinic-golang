@@ -1,13 +1,14 @@
 package handler
 
 import (
-	"github.com/DmytroPI-dev/clinic-golang/internal/models"
+	"log"
+	"net/http"
+
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/models"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"log"
-	"net/http"
 )
 
 // Rendering login page

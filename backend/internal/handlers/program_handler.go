@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"github.com/DmytroPI-dev/clinic-golang/internal/models"
+	"net/http"
+
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 // ProgramResponse defines the structure of the JSON response for a program.

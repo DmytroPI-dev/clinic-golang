@@ -34,6 +34,13 @@
             <label class="form-label">Features</label>
             <textarea class="form-control" name="features" rows="3">{{ .News.Features }}</textarea>
         </div>
+        <hr>
+        <div class="mb-3">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-control" name="date" required
+                value="{{ if not .News.PostedOn.IsZero }}{{ .News.PostedOn.Format " 2006-01-02" }}{{ end }}">
+
+        </div>
 
         <hr>
         <h5>Images</h5>
