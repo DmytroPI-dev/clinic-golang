@@ -5,27 +5,25 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
-	"time"
 )
 
 // ProgramResponse defines the structure of the JSON response for a program.
 // We use `json:"..."` tags to control the field names in the JSON output.
 type ProgramResponse struct {
-	ID            uint      `json:"id"`
-	CreatedAt     time.Time `json:"created_at"`
-	Title         string    `json:"title"`
-	TitlePL       string    `json:"title_pl"`
-	TitleEN       string    `json:"title_en"`
-	TitleUK       string    `json:"title_uk"`
-	Description   string    `json:"description"`
-	DescriptionPL string    `json:"description_pl"`
-	DescriptionEN string    `json:"description_en"`
-	DescriptionUK string    `json:"description_uk"`
-	Results       string    `json:"results"`
-	ResultsPL     string    `json:"results_pl"`
-	ResultsEN     string    `json:"results_en"`
-	ResultsUK     string    `json:"results_uk"`
-	Category      string    `json:"category"`
+	ID            uint   `json:"pk"`
+	Title         string `json:"title"`
+	TitleUK       string `json:"title_uk"`
+	TitlePL       string `json:"title_pl"`
+	TitleEN       string `json:"title_en"`
+	Description   string `json:"description"`
+	DescriptionUK string `json:"description_uk"`
+	DescriptionPL string `json:"description_pl"`
+	DescriptionEN string `json:"description_en"`
+	Results       string `json:"results"`
+	ResultsUK     string `json:"results_uk"`
+	ResultsPL     string `json:"results_pl"`
+	ResultsEN     string `json:"results_en"`
+	Category      string `json:"category"`
 }
 
 // ListPrograms is the handler for fetching all programs.
@@ -40,27 +38,26 @@ func ListPrograms(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		// 2. Mapping the database models to our API responce structs.
-		var responces []ProgramResponse
+		var responses []ProgramResponse
 		for _, program := range programs {
-			responces = append(responces, ProgramResponse{
+			responses = append(responses, ProgramResponse{
 				ID:            program.ID,
-				CreatedAt:     program.CreatedAt,
 				Title:         program.Title,
+				TitleUK:       program.TitleUK,
 				TitlePL:       program.TitlePL,
 				TitleEN:       program.TitleEN,
-				TitleUK:       program.TitleUK,
 				Description:   program.Description,
+				DescriptionUK: program.DescriptionUK,
 				DescriptionPL: program.DescriptionPL,
 				DescriptionEN: program.DescriptionEN,
-				DescriptionUK: program.DescriptionUK,
 				Results:       program.Results,
+				ResultsUK:     program.ResultsUK,
 				ResultsPL:     program.ResultsPL,
 				ResultsEN:     program.ResultsEN,
-				ResultsUK:     program.ResultsUK,
 				Category:      program.Category,
 			})
 		}
-		ctx.JSON(http.StatusOK, responces)
+		ctx.JSON(http.StatusOK, responses)
 	}
 }
 
@@ -87,19 +84,18 @@ func GetProgram(db *gorm.DB) gin.HandlerFunc {
 		}
 		response := ProgramResponse{
 			ID:            program.ID,
-			CreatedAt:     program.CreatedAt,
 			Title:         program.Title,
+			TitleUK:       program.TitleUK,
 			TitlePL:       program.TitlePL,
 			TitleEN:       program.TitleEN,
-			TitleUK:       program.TitleUK,
 			Description:   program.Description,
+			DescriptionUK: program.DescriptionUK,
 			DescriptionPL: program.DescriptionPL,
 			DescriptionEN: program.DescriptionEN,
-			DescriptionUK: program.DescriptionUK,
 			Results:       program.Results,
+			ResultsUK:     program.ResultsUK,
 			ResultsPL:     program.ResultsPL,
 			ResultsEN:     program.ResultsEN,
-			ResultsUK:     program.ResultsUK,
 			Category:      program.Category,
 		}
 		// Sending the responce

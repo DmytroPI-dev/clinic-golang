@@ -5,18 +5,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
-	"time"
 )
 
 type PriceResponse struct {
-	ID         uint      `json:"id"`
-	CreatedAt  time.Time `json:"created_at"`
-	ItemName   string    `json:"item_name"`
-	Price      float32   `json:"price"`
-	Category   string    `json:"category"`
-	ItemNamePL string    `json:"item_name_pl"`
-	ItemNameEN string    `json:"item_name_en"`
-	ItemNameUK string    `json:"item_name_uk"`
+    // We use json tags to change the output field names
+    ID         uint    `json:"pk"`
+    ItemName   string  `json:"position"`
+    ItemNameEN string  `json:"position_en"`
+    ItemNamePL string  `json:"position_pl"`
+    ItemNameUK string  `json:"position_uk"`
+    Price      float32 `json:"price,string"` // The ",string" option formats the number as a string
+    Category   string  `json:"category"`
 }
 
 func ListPrices(db *gorm.DB) gin.HandlerFunc {
@@ -32,7 +31,6 @@ func ListPrices(db *gorm.DB) gin.HandlerFunc {
 		for _, price := range prices {
 			responces = append(responces, PriceResponse{
 				ID:         price.ID,
-				CreatedAt:  price.CreatedAt,
 				ItemName:   price.ItemName,
 				Price:      price.Price,
 				Category:   price.Category,
@@ -67,7 +65,6 @@ func GetPrice(db *gorm.DB) gin.HandlerFunc {
 		}
 		response := PriceResponse{
 			ID:         price.ID,
-			CreatedAt:  price.CreatedAt,
 			ItemName:   price.ItemName,
 			Price:      price.Price,
 			Category:   price.Category,
@@ -84,7 +81,7 @@ func GetPrice(db *gorm.DB) gin.HandlerFunc {
 // We use `binding:"required"` for basic validation.
 type CreatePriceRequest struct {
 	ItemName string  `json:"item_name" binding:"required"`
-	Price    float32 `json:"price" binding:"required"`
+	Price    float32 `json:"price,string" binding:"required"`
 	Category string  `json:"category" binding:"required,len=2"`
 }
 
@@ -119,7 +116,7 @@ func CreatePrice(db *gorm.DB) gin.HandlerFunc {
 
 type UpdatePriceRequest struct {
 	ItemName   string  `json:"item_name" binding:"required"`
-	Price      float32 `json:"price" binding:"required"`
+	Price      float32 `json:"price,string" binding:"required"` // The ",string" option formats the number as a string
 	Category   string  `json:"category" binding:"required,len=2"`
 	ItemNamePL string  `json:"item_name_pl"`
 	ItemNameEN string  `json:"item_name_en"`

@@ -14,7 +14,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"path/filepath"
+	// "path/filepath"
 	"strings"
 )
 
@@ -132,7 +132,8 @@ func main() {
 
 	// Creating Gin router
 	router := gin.Default()
-	router.Static("/static", "./static")
+	router.Static("/uploads", "./uploads")
+	router.Static("/static", "./frontend/static")
 	// Serve frontend static files from the 'web/static' directory under a unique path
 	router.Static("/ui-assets", "./web/static")
 
@@ -253,17 +254,17 @@ func main() {
 			// This logic serves static files (like CSS, JS) if they have an extension,
 			// and serves 'index.html' for paths without an extension, which is
 			// a common pattern for Single-Page Applications (SPAs).
-			dir, file := filepath.Split(c.Request.URL.Path)
-			ext := filepath.Ext(file)
+			//dir, file := filepath.Split(c.Request.URL.Path)
+			// ext := filepath.Ext(file)
 
-			if file == "" || ext == "" {
-				// When a directory or a path without an extension is requested,
-				// serve the main 'index.html' file from the 'web' directory.
-				c.File("./web/templates/404.html")
-			} else {
-				// When a file with an extension is requested, serve it from the 'web' directory.
-				c.File(filepath.Join("./web", dir, file))
-			}
+			// if file == "" || ext == "" {
+			// 	// When a directory or a path without an extension is requested,
+			// 	// serve the main 'index.html' file from the 'web' directory.
+			// 	c.File("./web/templates/404.html")
+			// } else {
+			// 	// When a file with an extension is requested, serve it from the 'web' directory.
+			// 	// c.File(filepath.Join("./web", dir, file))
+			c.File("./frontend/index.html")
 		})
 
 		// Start server

@@ -16,37 +16,99 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
+        <hr>
+        <h5>Default Language</h5>
         <div class="mb-3">
-            <label for="title" class="form-label">Title</label>
+            <label class="form-label">Title</label>
             <input type="text" class="form-control" name="title" required value="{{ .News.Title }}">
         </div>
         <div class="mb-3">
-            <label for="header" class="form-label">Header</label>
+            <label class="form-label">Header</label>
             <input type="text" class="form-control" name="header" required value="{{ .News.Header }}">
         </div>
         <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <input type="text" class="form-control" name="description" required value="{{ .News.Description }}">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="3">{{ .News.Description }}</textarea>
         </div>
         <div class="mb-3">
-            <label for="features" class="form-label">Features</label>
-            <input type="text" class="form-control" name="features" required value="{{ .News.Features }}">
+            <label class="form-label">Features</label>
+            <textarea class="form-control" name="features" rows="3">{{ .News.Features }}</textarea>
         </div>
+
+        <hr>
+        <h5>Images</h5>
         <div class="mb-3">
-            <label for="image_left" class="form-label">Left Image</label>
+            <label class="form-label">Left Image</label>
             {{ if .News.ImageLeft }}
             <img src="{{ .News.ImageLeft  }}" alt="Current Left Image" width="100" class="d-block mb-2">
             {{ end }}
             <input type="file" class="form-control" name="image_left" {{ if not $isEdit }}required{{ end }}>
         </div>
         <div class="mb-3">
-            <label for="image_right" class="form-label">Right Image</label>
+            <label class="form-label">Right Image</label>
             {{ if .News.ImageRight }}
             <img src="{{ .News.ImageRight  }}" alt="Current Right Image" width="100" class="d-block mb-2">
             {{ end }}
             <input type="file" class="form-control" name="image_right" {{ if not $isEdit }}required{{ end }}>
         </div>
 
+        <hr>
+        <h5>Polish (PL)</h5>
+        <div class="mb-3">
+            <label class="form-label">Title PL</label>
+            <input type="text" class="form-control" name="title_pl" value="{{ .News.TitlePL }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Header PL</label>
+            <input type="text" class="form-control" name="header_pl" value="{{ .News.HeaderPL }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description PL</label>
+            <textarea class="form-control" name="description_pl" rows="3">{{ .News.DescriptionPL }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Features PL</label>
+            <textarea class="form-control" name="features_pl" rows="3">{{ .News.FeaturesPL }}</textarea>
+        </div>
+        <hr>
+
+        <h5>English (EN)</h5>
+        <div class="mb-3">
+            <label class="form-label">Title EN</label>
+            <input type="text" class="form-control" name="title_en" value="{{ .News.TitleEN }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Header EN</label>
+            <input type="text" class="form-control" name="header_en" value="{{ .News.HeaderEN }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description EN</label>
+            <textarea class="form-control" name="description_en" rows="3">{{ .News.DescriptionEN }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Features EN</label>
+            <textarea class="form-control" name="features_en" rows="3">{{ .News.FeaturesEN }}</textarea>
+        </div>
+        <hr>
+
+        <h5>Ukrainian (UK)</h5>
+        <div class="mb-3">
+            <label class="form-label">Title UK</label>
+            <input type="text" class="form-control" name="title_uk" value="{{ .News.TitleUK }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Header UK</label>
+            <input type="text" class="form-control" name="header_uk" value="{{ .News.HeaderUK }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description UK</label>
+            <textarea class="form-control" name="description_uk" rows="3">{{ .News.DescriptionUK }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Features UK</label>
+            <textarea class="form-control" name="features_uk" rows="3">{{ .News.FeaturesUK }}</textarea>
+        </div>
+        <hr>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

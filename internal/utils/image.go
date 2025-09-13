@@ -29,7 +29,7 @@ func ProcessAndSaveImages(file *multipart.FileHeader) (string, error) {
 
 	// Create unique name
 	uniqueFileName := fmt.Sprintf("%d%s", time.Now().Unix(), filepath.Base(file.Filename))
-	savePath := filepath.Join("static", uniqueFileName)
+	savePath := filepath.Join("uploads", uniqueFileName)
 
 	// Save resized image
 	err = imaging.Save(resized, savePath)

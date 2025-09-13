@@ -15,6 +15,7 @@ import (
 func AdminShowNewProgramForm(ctx *gin.Context) {
 	ctx.HTML(http.StatusOK, "program-form.html", gin.H{
 		"Categories": models.AllCategories,
+		"Program":    models.Program{},
 	})
 }
 
@@ -40,26 +41,11 @@ func ShowProgramsPage(db *gorm.DB) gin.HandlerFunc {
 // Create new program template
 func AdminCreateNewProgram(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// Parse form data from the request
-		title := ctx.PostForm("title")
-		description := ctx.PostForm("description")
-		results := ctx.PostForm("results")
-		category := ctx.PostForm("category")
-		// Create a new program model instance with the data
-		newProgram := models.Program{
-			Title:         title,
-			Description:   description,
-			Results:       results,
-			Category:      category,
-			TitlePL:       title,
-			TitleEN:       title,
-			TitleUK:       title,
-			DescriptionPL: description,
-			DescriptionEN: description,
-			DescriptionUK: description,
-			ResultsPL:     results,
-			ResultsEN:     results,
-			ResultsUK:     results,
+		var newProgram models.Program
+		if err := ctx.ShouldBind(&newProgram); err != nil {
+			log.Printf("Failed to bind program data: %s", err)
+			ctx.Status(http.StatusBadRequest)
+			return
 		}
 		// Save the newly created program to DB
 		if err := db.Create(&newProgram).Error; err != nil {
@@ -67,8 +53,14 @@ func AdminCreateNewProgram(db *gorm.DB) gin.HandlerFunc {
 			ctx.Status(http.StatusInternalServerError)
 			return
 		}
-		// REnder and return HTML fragment for new row
-		ctx.HTML(http.StatusOK, "program-row.html", newProgram)
+		// Get user role from session to correctly render the row template
+		session := sessions.Default(ctx)
+		userRole := session.Get("userRole")
+		// Render and return HTML fragment for new row, passing data in a map
+		ctx.HTML(http.StatusOK, "program-row.html", gin.H{
+			"Item":     newProgram,
+			"UserRole": userRole,
+		})
 	}
 }
 
@@ -128,13 +120,12 @@ func AdminUpdateProgram(db *gorm.DB) gin.HandlerFunc {
 			ctx.Status(http.StatusNotFound)
 			return
 		}
-
-		//Parse data from the request
-		program.Title = ctx.PostForm("title")
-		program.Description = ctx.PostForm("description")
-		program.Results = ctx.PostForm("results")
-		program.Category = ctx.PostForm("category")
-		// Will update translation fields later
+		// Bind form data to the existing program struct
+		if err := ctx.ShouldBind(&program); err != nil {
+			log.Printf("Failed to bind program data: %s", err)
+			ctx.Status(http.StatusBadRequest)
+			return
+		}
 
 		// Save updates to the DB
 		if err := db.Save(&program).Error; err != nil {
@@ -142,7 +133,13 @@ func AdminUpdateProgram(db *gorm.DB) gin.HandlerFunc {
 			ctx.Status(http.StatusInternalServerError)
 			return
 		}
-		// Return the updated program
-		ctx.HTML(http.StatusOK, "program-row.html", program)
+		// Get user role from session to correctly render the row template
+		session := sessions.Default(ctx)
+		userRole := session.Get("userRole")
+		// Return the updated program, passing data in a map
+		ctx.HTML(http.StatusOK, "program-row.html", gin.H{
+			"Item":     program,
+			"UserRole": userRole,
+		})
 	}
 }
