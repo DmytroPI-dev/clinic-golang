@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
 	"github.com/gin-contrib/sessions"
@@ -39,34 +38,38 @@ func AdminShowNewPriceForm(ctx *gin.Context) {
 // Create new price template
 func AdminCreateNewPrice(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// Parse form data from the request
-		itemName := ctx.PostForm("itemName")
-		category := ctx.PostForm("category")
-		priceStr := ctx.PostForm("price")
-		price, err := strconv.ParseFloat(priceStr, 32)
-		if err != nil {
-			log.Printf("Failed to parse price: %s", err)
+		var newPrice models.Price
+		if err := ctx.ShouldBind(&newPrice); err != nil {
+			log.Printf("Failed to bind price data: %s", err)
 			ctx.Status(http.StatusBadRequest)
 			return
 		}
 
-		// Create a new price model instance with the data
-		newPrice := models.Price{
-			ItemName:   itemName,
-			Price:      float32(price),
-			Category:   category,
-			ItemNamePL: itemName,
-			ItemNameEN: itemName,
-			ItemNameUK: itemName,
+		// If translation fields are not submitted, populate them with the default language value.
+		if newPrice.ItemNamePL == "" {
+			newPrice.ItemNamePL = newPrice.ItemName
 		}
+		if newPrice.ItemNameEN == "" {
+			newPrice.ItemNameEN = newPrice.ItemName
+		}
+		if newPrice.ItemNameUK == "" {
+			newPrice.ItemNameUK = newPrice.ItemName
+		}
+
 		// Save the newly created price item to DB
 		if err := db.Create(&newPrice).Error; err != nil {
 			log.Printf("Failed to create price: %s", err)
 			ctx.Status(http.StatusInternalServerError)
 			return
 		}
-		// Render and return HTML fragment for new row
-		ctx.HTML(http.StatusOK, "price-row.html", newPrice)
+		// Get user role from session to correctly render the row template
+		session := sessions.Default(ctx)
+		userRole := session.Get("userRole")
+		// Render and return HTML fragment for new row, passing data in a map
+		ctx.HTML(http.StatusOK, "price-row.html", gin.H{
+			"Item":     newPrice,
+			"UserRole": userRole,
+		})
 	}
 }
 
@@ -127,18 +130,12 @@ func AdminUpdatePrice(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		//Parse data from the request
-		price.ItemName = ctx.PostForm("itemName")
-		priceStr := ctx.PostForm("price")
-		if priceFloat, err := strconv.ParseFloat(priceStr, 32); err != nil {
-			log.Printf("Failed to parse price '%s': %s", priceStr, err)
+		// Bind form data to the existing price struct
+		if err := ctx.ShouldBind(&price); err != nil {
+			log.Printf("Failed to bind price data: %s", err)
 			ctx.Status(http.StatusBadRequest)
 			return
-		} else {
-			price.Price = float32(priceFloat)
 		}
-		price.Category = ctx.PostForm("category")
-		// Will update translation fields later
 
 		// Save updates to the DB
 		if err := db.Save(&price).Error; err != nil {
@@ -146,7 +143,13 @@ func AdminUpdatePrice(db *gorm.DB) gin.HandlerFunc {
 			ctx.Status(http.StatusInternalServerError)
 			return
 		}
-		// Return the updated price
-		ctx.HTML(http.StatusOK, "price-row.html", price)
+		// Get user role from session to correctly render the row template
+		session := sessions.Default(ctx)
+		userRole := session.Get("userRole")
+		// Return the updated price, passing data in a map
+		ctx.HTML(http.StatusOK, "price-row.html", gin.H{
+			"Item":     price,
+			"UserRole": userRole,
+		})
 	}
 }

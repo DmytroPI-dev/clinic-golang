@@ -1,6 +1,12 @@
 package main
 
 import (
+	"html/template"
+	"log"
+	"net/http"
+	"path/filepath"
+	"strings"
+
 	"github.com/DmytroPI-dev/clinic-golang/internal/config"
 	"github.com/DmytroPI-dev/clinic-golang/internal/database"
 	handler "github.com/DmytroPI-dev/clinic-golang/internal/handlers"
@@ -11,11 +17,6 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"html/template"
-	"log"
-	"net/http"
-	"path/filepath"
-	"strings"
 )
 
 var funcMap = template.FuncMap{
@@ -132,7 +133,10 @@ func main() {
 
 	// Creating Gin router
 	router := gin.Default()
-	router.Static("/static", "./static")
+	// uploaded photos
+	router.Static("/uploads", "./uploads")
+	// Serve frontend static files from the 'frontend/static' directory under a unique path
+	router.Static("/static", "./frontend/static")
 	// Serve frontend static files from the 'web/static' directory under a unique path
 	router.Static("/ui-assets", "./web/static")
 
@@ -243,26 +247,21 @@ func main() {
 		})
 
 		router.NoRoute(func(c *gin.Context) {
-			// For API routes that are not found, we want to return a JSON 404.
-			if strings.HasPrefix(c.Request.URL.Path, "/api/") {
+			path := c.Request.URL.Path
+			// For API routes that are not found, return a JSON 404.
+			if strings.HasPrefix(path, "/api/") {
 				c.JSON(http.StatusNotFound, gin.H{"error": "Not Found"})
 				return
 			}
 
-			// For any other route, we assume it's for the frontend.
-			// This logic serves static files (like CSS, JS) if they have an extension,
-			// and serves 'index.html' for paths without an extension, which is
-			// a common pattern for Single-Page Applications (SPAs).
-			dir, file := filepath.Split(c.Request.URL.Path)
-			ext := filepath.Ext(file)
-
-			if file == "" || ext == "" {
-				// When a directory or a path without an extension is requested,
-				// serve the main 'index.html' file from the 'web' directory.
+			// For any unmatched admin routes, or for requests to non-existent static files,
+			// serve the custom 404 page.
+			if strings.HasPrefix(path, "/admin/") || filepath.Ext(path) != "" {
 				c.File("./web/templates/404.html")
 			} else {
-				// When a file with an extension is requested, serve it from the 'web' directory.
-				c.File(filepath.Join("./web", dir, file))
+				// For all other routes, assume it's a path
+				// for the React single-page application and serve its entry point.
+				c.File("./frontend/index.html")
 			}
 		})
 
@@ -270,6 +269,5 @@ func main() {
 		serverAddress := "localhost:" + cfg.ServerPort
 		log.Printf("Starting server on %s", serverAddress)
 		router.Run(serverAddress)
-
 	}
 }

@@ -7,27 +7,15 @@
 {{ $actionURL = printf "/admin/programs/%d" .Program.ID }}
 {{ end }}
 
-<form
- {{ if $isEdit }} 
-    hx-put="{{ $actionURL }}" 
-    hx-target="#program-row-{{ .Program.ID }}" 
-    hx-swap="outerHTML" 
-{{ else }}
-    hx-post="{{ $actionURL }}" 
-    hx-target="#programs-table-body" 
-    hx-swap="beforeend" 
-{{ end }}
+<form {{ if $isEdit }} hx-put="{{ $actionURL }}" hx-target="#program-row-{{ .Program.ID }}" hx-swap="outerHTML" {{ else
+    }} hx-post="{{ $actionURL }}" hx-target="#programs-table-body" hx-swap="beforeend" {{ end }}
     hx-on="htmx:afterOnLoad: this.closest('.modal').querySelector('[data-bs-dismiss]').click()">
-    
+
     <div class="modal-header">
         <h5 class="modal-title">{{ if $isEdit }}Edit Program{{ else }}Add New Program{{ end }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        <div class="mb-3">
-            <label for="title" class="form-label">Title</label>
-            <input type="text" class="form-control" name="title" required value="{{ .Program.Title }}">
-        </div>
         <div class="mb-3">
             <label for="category" class="form-label">Category</label>
             <select class="form-select" name="category">
@@ -36,14 +24,68 @@
                 {{ end }}
             </select>
         </div>
+
+        <hr>
+        <h5>Default Language</h5>
         <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" name="title" required value="{{ .Program.Title }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description</label>
             <textarea class="form-control" name="description" rows="3">{{ .Program.Description }}</textarea>
         </div>
         <div class="mb-3">
-            <label for="results" class="form-label">Results</label>
+            <label class="form-label">Results</label>
             <textarea class="form-control" name="results" rows="3">{{ .Program.Results }}</textarea>
         </div>
+
+        <hr>
+        <h5>Polish (PL)</h5>
+        <div class="mb-3">
+            <label class="form-label">Title PL</label>
+            <input type="text" class="form-control" name="title_pl" value="{{ .Program.TitlePL }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description PL</label>
+            <textarea class="form-control" name="description_pl" rows="3">{{ .Program.DescriptionPL }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Results PL</label>
+            <textarea class="form-control" name="results_pl" rows="3">{{ .Program.ResultsPL }}</textarea>
+        </div>
+        <hr>
+
+        <h5>English (EN)</h5>
+        <div class="mb-3">
+            <label class="form-label">Title EN</label>
+            <input type="text" class="form-control" name="title_en" value="{{ .Program.TitleEN }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description EN</label>
+            <textarea class="form-control" name="description_en" rows="3">{{ .Program.DescriptionEN }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Results EN</label>
+            <textarea class="form-control" name="results_en" rows="3">{{ .Program.ResultsEN }}</textarea>
+        </div>
+        <hr>
+
+        <h5>Ukrainian (UK)</h5>
+        <div class="mb-3">
+            <label class="form-label">Title UKR</label>
+            <input type="text" class="form-control" name="title_uk" value="{{ .Program.TitleUK }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description UKR</label>
+            <textarea class="form-control" name="description_uk" rows="3">{{ .Program.DescriptionUK }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Results UKR</label>
+            <textarea class="form-control" name="results_uk" rows="3">{{ .Program.ResultsUK }}</textarea>
+        </div>
+        <hr>
+
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

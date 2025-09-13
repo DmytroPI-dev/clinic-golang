@@ -1,77 +1,139 @@
 package handler
 
 import (
+	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
+	"github.com/DmytroPI-dev/clinic-golang/internal/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"net/http"
-	"time"
 )
 
-// NewsResponse defines the structure of the JSON response for a program.
+// NewsResponse defines the structure of the JSON response for a news.
 // We use `json:"..."` tags to control the field names in the JSON output.
+// NewsResponse matches a single item in the "results" array.
 type NewsResponse struct {
-	ID            uint      `json:"id"`
-	CreatedAt     time.Time `json:"created_at"`
-	Title         string    `json:"title"`
-	Header        string    `json:"header"`
-	Description   string    `json:"description"`
-	Features      string    `json:"features"`
-	PostedOn      time.Time `json:"posted_on"`
-	ImageLeft     string    `json:"image_left"`
-	ImageRight    string    `json:"image_right"`
-	TitlePL       string    `json:"title_pl"`
-	DescriptionPL string    `json:"description_pl"`
-	HeaderPL      string    `json:"header_pl"`
-	FeaturesPL    string    `json:"features_pl"`
-	TitleEN       string    `json:"title_en"`
-	DescriptionEN string    `json:"description_en"`
-	HeaderEN      string    `json:"header_en"`
-	FeaturesEN    string    `json:"features_en"`
-	TitleUK       string    `json:"title_uk"`
-	DescriptionUK string    `json:"description_uk"`
-	HeaderUK      string    `json:"header_uk"`
-	FeaturesUK    string    `json:"features_uk"`
+	ID            uint            `json:"pk"`
+	Title         string          `json:"title"`
+	TitleUK       string          `json:"title_uk"`
+	TitlePL       string          `json:"title_pl"`
+	TitleEN       string          `json:"title_en"`
+	Description   string          `json:"description"`
+	DescriptionUK string          `json:"description_uk"`
+	DescriptionPL string          `json:"description_pl"`
+	DescriptionEN string          `json:"description_en"`
+	Header        string          `json:"header"`
+	HeaderUK      string          `json:"header_uk"`
+	HeaderPL      string          `json:"header_pl"`
+	HeaderEN      string          `json:"header_en"`
+	Features      string          `json:"features"`
+	FeaturesUK    string          `json:"features_uk"`
+	FeaturesPL    string          `json:"features_pl"`
+	FeaturesEN    string          `json:"features_en"`
+	PostedOn      utils.ShortDate `json:"posted_on"`
+	// Pointers are used for fields that can be null
+	ImageLeft  *string `json:"image_left,omitempty"`
+	ImageRight *string `json:"image_right,omitempty"`
+}
+
+// PaginatedNewsResponse matches the top-level paginated Django structure.
+type PaginatedNewsResponse struct {
+	Count    int64          `json:"count"`
+	Next     *string        `json:"next"`
+	Previous *string        `json:"previous"`
+	Results  []NewsResponse `json:"results"`
+}
+
+// toNewsResponse converts a models.News to a NewsResponse.
+func toNewsResponse(news models.News) NewsResponse {
+	var imgLeft, imgRight *string
+	if news.ImageLeft != "" {
+		imgLeft = &news.ImageLeft
+	}
+	if news.ImageRight != "" {
+		imgRight = &news.ImageRight
+	}
+
+	return NewsResponse{
+		ID:            news.ID,
+		Title:         news.Title,
+		TitleUK:       news.TitleUK,
+		TitlePL:       news.TitlePL,
+		TitleEN:       news.TitleEN,
+		Description:   news.Description,
+		DescriptionUK: news.DescriptionUK,
+		DescriptionPL: news.DescriptionPL,
+		DescriptionEN: news.DescriptionEN,
+		Header:        news.Header,
+		HeaderUK:      news.HeaderUK,
+		HeaderPL:      news.HeaderPL,
+		HeaderEN:      news.HeaderEN,
+		Features:      news.Features,
+		FeaturesUK:    news.FeaturesUK,
+		FeaturesPL:    news.FeaturesPL,
+		FeaturesEN:    news.FeaturesEN,
+		PostedOn:      utils.ShortDate(news.PostedOn),
+		ImageLeft:     imgLeft,
+		ImageRight:    imgRight,
+	}
 }
 
 // ListNews is the handler for fetching all News.
 // It accepts the GORM database connection as an argument.
 func ListNews(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var news []models.News
-		// 1. Fetching all News from the database.
-		if err := db.Find(&news).Error; err != nil {
+		// Get pagination parameters from the query string (e.g., ?limit=10&page=1)
+		limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "1"))
+		page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+		offset := (page - 1) * limit
+		// Get total number of News
+		var count int64
+		if err := db.Model(&models.News{}).Count(&count).Error; err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count News"})
+			return
+		}
+		// Fetching paginated list of News from the database.
+		var newsItems []models.News
+		if err := db.Limit(limit).Offset(offset).Order("posted_on desc").Find(&newsItems).Error; err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch News"})
 			return
 		}
-		// 2. Mapping the database models to our API responce structs.
-		var responces []NewsResponse
-		for _, singleNews := range news {
-			responces = append(responces, NewsResponse{
-				ID:            singleNews.ID,
-				CreatedAt:     singleNews.CreatedAt,
-				Title:         singleNews.Title,
-				Header:        singleNews.Header,
-				Description:   singleNews.Description,
-				Features:      singleNews.Features,
-				PostedOn:      singleNews.PostedOn,
-				ImageLeft:     singleNews.ImageLeft,
-				ImageRight:    singleNews.ImageRight,
-				TitlePL:       singleNews.TitlePL,
-				DescriptionPL: singleNews.DescriptionPL,
-				HeaderPL:      singleNews.HeaderPL,
-				FeaturesPL:    singleNews.FeaturesPL,
-				TitleEN:       singleNews.TitleEN,
-				DescriptionEN: singleNews.DescriptionEN,
-				HeaderEN:      singleNews.HeaderEN,
-				FeaturesEN:    singleNews.FeaturesEN,
-				TitleUK:       singleNews.TitleUK,
-				DescriptionUK: singleNews.DescriptionUK,
-				HeaderUK:      singleNews.HeaderUK,
-				FeaturesUK:    singleNews.FeaturesUK,
-			})
+		// Mapping the database models to our responce structs.
+		results := make([]NewsResponse, 0, len(newsItems))
+		for _, item := range newsItems {
+			results = append(results, toNewsResponse(item))
 		}
-		ctx.JSON(http.StatusOK, responces)
+		// Build paginated response object
+		var nextURL, prevURL *string
+
+		//Detect the absolute URL
+		scheme := "http"
+		if ctx.Request.TLS != nil {
+			scheme = "https"
+		}
+		host := ctx.Request.Host	
+		baseURL := fmt.Sprintf("%s://%s/api/v1/news?limit=%d", scheme, host, limit)
+
+		if int64(page)*int64(limit) < count {
+			url := fmt.Sprintf("%s&page=%d", baseURL, page+1)
+			nextURL = &url
+		}
+		if page > 1 {
+			url := fmt.Sprintf("%s&page=%d", baseURL, page-1)
+			prevURL = &url
+		}
+
+		response := PaginatedNewsResponse{
+			Count:    count,
+			Next:     nextURL,
+			Previous: prevURL,
+			Results:  results,
+		}
+
+		ctx.JSON(http.StatusOK, response)
 	}
 }
 
@@ -95,29 +157,7 @@ func GetNews(db *gorm.DB) gin.HandlerFunc {
 			}
 			return
 		}
-		response := NewsResponse{
-			ID:            news.ID,
-			CreatedAt:     news.CreatedAt,
-			Title:         news.Title,
-			Header:        news.Header,
-			Description:   news.Description,
-			Features:      news.Features,
-			PostedOn:      news.PostedOn,
-			ImageLeft:     news.ImageLeft,
-			ImageRight:    news.ImageRight,
-			TitlePL:       news.TitlePL,
-			DescriptionPL: news.DescriptionPL,
-			HeaderPL:      news.HeaderPL,
-			FeaturesPL:    news.FeaturesPL,
-			TitleEN:       news.TitleEN,
-			DescriptionEN: news.DescriptionEN,
-			HeaderEN:      news.HeaderEN,
-			FeaturesEN:    news.FeaturesEN,
-			TitleUK:       news.TitleUK,
-			DescriptionUK: news.DescriptionUK,
-			HeaderUK:      news.HeaderUK,
-			FeaturesUK:    news.FeaturesUK,
-		}
+		response := toNewsResponse(news)
 		ctx.JSON(http.StatusOK, response)
 	}
 }
@@ -170,7 +210,8 @@ func CreateNews(db *gorm.DB) gin.HandlerFunc {
 		}
 		// Return created record as a response
 		// A 201 Created status will return
-		ctx.JSON(http.StatusCreated, singleNews)
+		response := toNewsResponse(singleNews)
+		ctx.JSON(http.StatusCreated, response)
 	}
 }
 
@@ -201,8 +242,8 @@ func UpdateNews(db *gorm.DB) gin.HandlerFunc {
 		// 1. Get the ID from URL
 		id := ctx.Param("id")
 		// 2. Find existing	record
-		var singleNews models.News
-		if err := db.First(&singleNews, id).Error; err != nil {
+		var newsItem models.News
+		if err := db.First(&newsItem, id).Error; err != nil {
 			// Handle no record case
 			if err == gorm.ErrRecordNotFound {
 				ctx.JSON(http.StatusNotFound, gin.H{"error": "News not found"})
@@ -219,33 +260,34 @@ func UpdateNews(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		// Update the fields of the News model with the new data
-		singleNews.Title = request.Title
-		singleNews.Header = request.Header
-		singleNews.Description = request.Description
-		singleNews.Features = request.Features
-		singleNews.PostedOn = request.PostedOn
-		singleNews.ImageLeft = request.ImageLeft
-		singleNews.ImageRight = request.ImageRight
-		singleNews.TitlePL = request.TitlePL
-		singleNews.HeaderPL = request.HeaderPL
-		singleNews.DescriptionPL = request.DescriptionPL
-		singleNews.FeaturesPL = request.FeaturesPL
-		singleNews.TitleEN = request.TitleEN
-		singleNews.HeaderEN = request.HeaderEN
-		singleNews.DescriptionEN = request.DescriptionEN
-		singleNews.FeaturesEN = request.FeaturesEN
-		singleNews.TitleUK = request.TitleUK
-		singleNews.HeaderUK = request.HeaderUK
-		singleNews.DescriptionUK = request.DescriptionUK
-		singleNews.FeaturesUK = request.FeaturesUK
+		newsItem.Title = request.Title
+		newsItem.Header = request.Header
+		newsItem.Description = request.Description
+		newsItem.Features = request.Features
+		newsItem.PostedOn = request.PostedOn
+		newsItem.ImageLeft = request.ImageLeft
+		newsItem.ImageRight = request.ImageRight
+		newsItem.TitlePL = request.TitlePL
+		newsItem.HeaderPL = request.HeaderPL
+		newsItem.DescriptionPL = request.DescriptionPL
+		newsItem.FeaturesPL = request.FeaturesPL
+		newsItem.TitleEN = request.TitleEN
+		newsItem.HeaderEN = request.HeaderEN
+		newsItem.DescriptionEN = request.DescriptionEN
+		newsItem.FeaturesEN = request.FeaturesEN
+		newsItem.TitleUK = request.TitleUK
+		newsItem.HeaderUK = request.HeaderUK
+		newsItem.DescriptionUK = request.DescriptionUK
+		newsItem.FeaturesUK = request.FeaturesUK
 
 		// Saving updated news to database
-		if err := db.Save(&singleNews).Error; err != nil {
+		if err := db.Save(&newsItem).Error; err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update News"})
 			return
 		}
 		// Return updated response
-		ctx.JSON(http.StatusOK, singleNews)
+		response := toNewsResponse(newsItem)
+		ctx.JSON(http.StatusOK, response)
 	}
 }
 

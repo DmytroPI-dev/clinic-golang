@@ -40,29 +40,26 @@ func AdminShowNewsForm(ctx *gin.Context) {
 // Create new news template
 func AdminCreateNews(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		// Parse form data from the request
-		Title := ctx.PostForm("title")
-		Header := ctx.PostForm("header")
-		Description := ctx.PostForm("description")
-		Features := ctx.PostForm("features")
-
-		// Create a new news model instance with the data
-		newNews := models.News{
-			Title: Title, Header: Header, Description: Description, Features: Features,
-			// Set translated fields to default language
-			TitlePL:       Title,
-			HeaderPL:      Header,
-			DescriptionPL: Description,
-			FeaturesPL:    Features,
-			TitleEN:       Title,
-			HeaderEN:      Header,
-			DescriptionEN: Description,
-			FeaturesEN:    Features,
-			TitleUK:       Title,
-			HeaderUK:      Header,
-			DescriptionUK: Description,
-			FeaturesUK:    Features,
+		var newNews models.News
+		if err := ctx.ShouldBind(&newNews); err != nil {
+			log.Printf("Failed to bind news data: %s", err)
+			ctx.Status(http.StatusBadRequest)
+			return
 		}
+
+		// Set translated fields to default language
+		newNews.TitlePL = newNews.Title
+		newNews.HeaderPL = newNews.Header
+		newNews.DescriptionPL = newNews.Description
+		newNews.FeaturesPL = newNews.Features
+		newNews.TitleEN = newNews.Title
+		newNews.HeaderEN = newNews.Header
+		newNews.DescriptionEN = newNews.Description
+		newNews.FeaturesEN = newNews.Features
+		newNews.TitleUK = newNews.Title
+		newNews.HeaderUK = newNews.Header
+		newNews.DescriptionUK = newNews.Description
+		newNews.FeaturesUK = newNews.Features
 
 		// Process and save imageLeft if provided
 		fileLeft, errLeft := ctx.FormFile("image_left")
@@ -94,8 +91,14 @@ func AdminCreateNews(db *gorm.DB) gin.HandlerFunc {
 			ctx.Status(http.StatusInternalServerError)
 			return
 		}
+		// Get user role from session to correctly render the row template
+		session := sessions.Default(ctx)
+		userRole := session.Get("userRole")
 		// Render and return HTML fragment for new row
-		ctx.HTML(http.StatusOK, "news-row.html", newNews)
+		ctx.HTML(http.StatusOK, "news-row.html", gin.H{
+			"Item":     newNews,
+			"UserRole": userRole,
+		})
 	}
 }
 
@@ -155,12 +158,12 @@ func AdminUpdateNews(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		//Parse data from the request
-		news.Title = ctx.PostForm("title")
-		news.Header = ctx.PostForm("header")
-		news.Description = ctx.PostForm("description")
-		news.Features = ctx.PostForm("features")
-		// Will update translation fields later
+		// Bind form data to the existing news struct
+		if err := ctx.ShouldBind(&news); err != nil {
+			log.Printf("Failed to bind news data: %s", err)
+			ctx.Status(http.StatusBadRequest)
+			return
+		}
 
 		// Process and save imageLeft if provided
 		fileLeft, errLeft := ctx.FormFile("image_left")
@@ -192,7 +195,13 @@ func AdminUpdateNews(db *gorm.DB) gin.HandlerFunc {
 			ctx.Status(http.StatusInternalServerError)
 			return
 		}
+		// Get user role from session to correctly render the row template
+		session := sessions.Default(ctx)
+		userRole := session.Get("userRole")
 		// Return the updated news
-		ctx.HTML(http.StatusOK, "news-row.html", news)
+		ctx.HTML(http.StatusOK, "news-row.html", gin.H{
+			"Item":     news,
+			"UserRole": userRole,
+		})
 	}
 }
