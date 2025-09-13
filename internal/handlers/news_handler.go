@@ -1,12 +1,14 @@
 package handler
 
 import (
-	"github.com/DmytroPI-dev/clinic-golang/internal/models"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/DmytroPI-dev/clinic-golang/internal/models"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // NewsResponse defines the structure of the JSON response for a news.
@@ -49,7 +51,7 @@ type PaginatedNewsResponse struct {
 func ListNews(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		// Get pagination parameters from the query string (e.g., ?limit=10&page=1)
-		limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+		limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "1"))
 		page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 		offset := (page - 1) * limit
 		// Get total number of News
@@ -100,10 +102,22 @@ func ListNews(db *gorm.DB) gin.HandlerFunc {
 			})
 		}
 		// Build paginated response object
+		var nextURL, prevURL *string
+		baseURL := fmt.Sprintf("/api/news/?limit=%d", limit)
+
+		if int64(page)*int64(limit) < count {
+			url := fmt.Sprintf("%s&page=%d", baseURL, page+1)
+			nextURL = &url
+		}
+		if page > 1 {
+			url := fmt.Sprintf("%s&page=%d", baseURL, page-1)
+			prevURL = &url
+		}
+
 		response := PaginatedNewsResponse{
 			Count:    count,
-			Next:     nil,
-			Previous: nil,
+			Next:     nextURL,
+			Previous: prevURL,
 			Results:  results,
 		}
 
