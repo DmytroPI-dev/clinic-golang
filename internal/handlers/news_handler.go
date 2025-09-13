@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/DmytroPI-dev/clinic-golang/internal/models"
+	"github.com/DmytroPI-dev/clinic-golang/internal/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -15,24 +16,24 @@ import (
 // We use `json:"..."` tags to control the field names in the JSON output.
 // NewsResponse matches a single item in the "results" array.
 type NewsResponse struct {
-	ID            uint      `json:"pk"`
-	Title         string    `json:"title"`
-	TitleUK       string    `json:"title_uk"`
-	TitlePL       string    `json:"title_pl"`
-	TitleEN       string    `json:"title_en"`
-	Description   string    `json:"description"`
-	DescriptionUK string    `json:"description_uk"`
-	DescriptionPL string    `json:"description_pl"`
-	DescriptionEN string    `json:"description_en"`
-	Header        string    `json:"header"`
-	HeaderUK      string    `json:"header_uk"`
-	HeaderPL      string    `json:"header_pl"`
-	HeaderEN      string    `json:"header_en"`
-	Features      string    `json:"features"`
-	FeaturesUK    string    `json:"features_uk"`
-	FeaturesPL    string    `json:"features_pl"`
-	FeaturesEN    string    `json:"features_en"`
-	PostedOn      time.Time `json:"posted_on"`
+	ID            uint            `json:"pk"`
+	Title         string          `json:"title"`
+	TitleUK       string          `json:"title_uk"`
+	TitlePL       string          `json:"title_pl"`
+	TitleEN       string          `json:"title_en"`
+	Description   string          `json:"description"`
+	DescriptionUK string          `json:"description_uk"`
+	DescriptionPL string          `json:"description_pl"`
+	DescriptionEN string          `json:"description_en"`
+	Header        string          `json:"header"`
+	HeaderUK      string          `json:"header_uk"`
+	HeaderPL      string          `json:"header_pl"`
+	HeaderEN      string          `json:"header_en"`
+	Features      string          `json:"features"`
+	FeaturesUK    string          `json:"features_uk"`
+	FeaturesPL    string          `json:"features_pl"`
+	FeaturesEN    string          `json:"features_en"`
+	PostedOn      utils.ShortDate `json:"posted_on"`
 	// Pointers are used for fields that can be null
 	ImageLeft  *string `json:"image_left,omitempty"`
 	ImageRight *string `json:"image_right,omitempty"`
@@ -44,6 +45,40 @@ type PaginatedNewsResponse struct {
 	Next     *string        `json:"next"`
 	Previous *string        `json:"previous"`
 	Results  []NewsResponse `json:"results"`
+}
+
+// toNewsResponse converts a models.News to a NewsResponse.
+func toNewsResponse(news models.News) NewsResponse {
+	var imgLeft, imgRight *string
+	if news.ImageLeft != "" {
+		imgLeft = &news.ImageLeft
+	}
+	if news.ImageRight != "" {
+		imgRight = &news.ImageRight
+	}
+
+	return NewsResponse{
+		ID:            news.ID,
+		Title:         news.Title,
+		TitleUK:       news.TitleUK,
+		TitlePL:       news.TitlePL,
+		TitleEN:       news.TitleEN,
+		Description:   news.Description,
+		DescriptionUK: news.DescriptionUK,
+		DescriptionPL: news.DescriptionPL,
+		DescriptionEN: news.DescriptionEN,
+		Header:        news.Header,
+		HeaderUK:      news.HeaderUK,
+		HeaderPL:      news.HeaderPL,
+		HeaderEN:      news.HeaderEN,
+		Features:      news.Features,
+		FeaturesUK:    news.FeaturesUK,
+		FeaturesPL:    news.FeaturesPL,
+		FeaturesEN:    news.FeaturesEN,
+		PostedOn:      utils.ShortDate(news.PostedOn),
+		ImageLeft:     imgLeft,
+		ImageRight:    imgRight,
+	}
 }
 
 // ListNews is the handler for fetching all News.
@@ -68,42 +103,19 @@ func ListNews(db *gorm.DB) gin.HandlerFunc {
 		}
 		// Mapping the database models to our responce structs.
 		results := make([]NewsResponse, 0, len(newsItems))
-		for _, item := range newsItems { // This was a bug, appending to a pre-sized slice.
-			// Handle nullable image fields
-			var imgLeft, imgRight *string
-			if item.ImageLeft != "" {
-				imgLeft = &item.ImageLeft
-			}
-			if item.ImageRight != "" {
-				imgRight = &item.ImageRight
-			}
-
-			results = append(results, NewsResponse{
-				ID:            item.ID,
-				Title:         item.Title,
-				Header:        item.Header,
-				Description:   item.Description,
-				Features:      item.Features,
-				TitlePL:       item.TitlePL,
-				DescriptionPL: item.DescriptionPL,
-				HeaderPL:      item.HeaderPL,
-				FeaturesPL:    item.FeaturesPL,
-				TitleEN:       item.TitleEN,
-				DescriptionEN: item.DescriptionEN,
-				HeaderEN:      item.HeaderEN,
-				FeaturesEN:    item.FeaturesEN,
-				TitleUK:       item.TitleUK,
-				DescriptionUK: item.DescriptionUK,
-				HeaderUK:      item.HeaderUK,
-				FeaturesUK:    item.FeaturesUK,
-				PostedOn:      item.PostedOn,
-				ImageLeft:     imgLeft,
-				ImageRight:    imgRight,
-			})
+		for _, item := range newsItems {
+			results = append(results, toNewsResponse(item))
 		}
 		// Build paginated response object
 		var nextURL, prevURL *string
-		baseURL := fmt.Sprintf("/api/news/?limit=%d", limit)
+
+		//Detect the absolute URL
+		scheme := "http"
+		if ctx.Request.TLS != nil {
+			scheme = "https"
+		}
+		host := ctx.Request.Host	
+		baseURL := fmt.Sprintf("%s://%s/api/v1/news?limit=%d", scheme, host, limit)
 
 		if int64(page)*int64(limit) < count {
 			url := fmt.Sprintf("%s&page=%d", baseURL, page+1)
@@ -145,37 +157,7 @@ func GetNews(db *gorm.DB) gin.HandlerFunc {
 			}
 			return
 		}
-		// Handle nullable image fields
-		var imgLeft, imgRight *string
-		if news.ImageLeft != "" {
-			imgLeft = &news.ImageLeft
-		}
-		if news.ImageRight != "" {
-			imgRight = &news.ImageRight
-		}
-
-		response := NewsResponse{
-			ID:            news.ID,
-			Title:         news.Title,
-			Header:        news.Header,
-			Description:   news.Description,
-			Features:      news.Features,
-			PostedOn:      news.PostedOn,
-			ImageLeft:     imgLeft,
-			ImageRight:    imgRight,
-			TitlePL:       news.TitlePL,
-			DescriptionPL: news.DescriptionPL,
-			HeaderPL:      news.HeaderPL,
-			FeaturesPL:    news.FeaturesPL,
-			TitleEN:       news.TitleEN,
-			DescriptionEN: news.DescriptionEN,
-			HeaderEN:      news.HeaderEN,
-			FeaturesEN:    news.FeaturesEN,
-			TitleUK:       news.TitleUK,
-			DescriptionUK: news.DescriptionUK,
-			HeaderUK:      news.HeaderUK,
-			FeaturesUK:    news.FeaturesUK,
-		}
+		response := toNewsResponse(news)
 		ctx.JSON(http.StatusOK, response)
 	}
 }
@@ -228,35 +210,7 @@ func CreateNews(db *gorm.DB) gin.HandlerFunc {
 		}
 		// Return created record as a response
 		// A 201 Created status will return
-		var imgLeft, imgRight *string
-		if singleNews.ImageLeft != "" {
-			imgLeft = &singleNews.ImageLeft
-		}
-		if singleNews.ImageRight != "" {
-			imgRight = &singleNews.ImageRight
-		}
-		response := NewsResponse{
-			ID:            singleNews.ID,
-			Title:         singleNews.Title,
-			Header:        singleNews.Header,
-			Description:   singleNews.Description,
-			Features:      singleNews.Features,
-			PostedOn:      singleNews.PostedOn,
-			ImageLeft:     imgLeft,
-			ImageRight:    imgRight,
-			TitlePL:       singleNews.TitlePL,
-			DescriptionPL: singleNews.DescriptionPL,
-			HeaderPL:      singleNews.HeaderPL,
-			FeaturesPL:    singleNews.FeaturesPL,
-			TitleEN:       singleNews.TitleEN,
-			DescriptionEN: singleNews.DescriptionEN,
-			HeaderEN:      singleNews.HeaderEN,
-			FeaturesEN:    singleNews.FeaturesEN,
-			TitleUK:       singleNews.TitleUK,
-			DescriptionUK: singleNews.DescriptionUK,
-			HeaderUK:      singleNews.HeaderUK,
-			FeaturesUK:    singleNews.FeaturesUK,
-		}
+		response := toNewsResponse(singleNews)
 		ctx.JSON(http.StatusCreated, response)
 	}
 }
@@ -332,35 +286,7 @@ func UpdateNews(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		// Return updated response
-		var imgLeft, imgRight *string
-		if newsItem.ImageLeft != "" {
-			imgLeft = &newsItem.ImageLeft
-		}
-		if newsItem.ImageRight != "" {
-			imgRight = &newsItem.ImageRight
-		}
-		response := NewsResponse{
-			ID:            newsItem.ID,
-			Title:         newsItem.Title,
-			Header:        newsItem.Header,
-			Description:   newsItem.Description,
-			Features:      newsItem.Features,
-			PostedOn:      newsItem.PostedOn,
-			ImageLeft:     imgLeft,
-			ImageRight:    imgRight,
-			TitlePL:       newsItem.TitlePL,
-			DescriptionPL: newsItem.DescriptionPL,
-			HeaderPL:      newsItem.HeaderPL,
-			FeaturesPL:    newsItem.FeaturesPL,
-			TitleEN:       newsItem.TitleEN,
-			DescriptionEN: newsItem.DescriptionEN,
-			HeaderEN:      newsItem.HeaderEN,
-			FeaturesEN:    newsItem.FeaturesEN,
-			TitleUK:       newsItem.TitleUK,
-			DescriptionUK: newsItem.DescriptionUK,
-			HeaderUK:      newsItem.HeaderUK,
-			FeaturesUK:    newsItem.FeaturesUK,
-		}
+		response := toNewsResponse(newsItem)
 		ctx.JSON(http.StatusOK, response)
 	}
 }
