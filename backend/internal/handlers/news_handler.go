@@ -88,7 +88,14 @@ func ListNews(db *gorm.DB) gin.HandlerFunc {
 		// Get pagination parameters from the query string (e.g., ?limit=10&page=1)
 		limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "1"))
 		page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+		limit, err := strconv.Atoi(ctx.DefaultQuery("limit", "1"))
+		if err != nil || limit <= 0 {
+			limit = 1
+		}
+
+	
 		offset := (page - 1) * limit
+
 		// Get total number of News
 		var count int64
 		if err := db.Model(&models.News{}).Count(&count).Error; err != nil {
