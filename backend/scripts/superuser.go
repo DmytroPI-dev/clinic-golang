@@ -1,0 +1,71 @@
+package main
+
+// usage go run ./scripts/superuser -user=new_admin_userName -password=a_very_strong_password -email=your@email.com
+
+import (
+	"errors"
+	"flag"
+	"log"
+
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/config"
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/database"
+	"github.com/DmytroPI-dev/clinic-golang/backend/internal/models"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
+
+func main() {
+	// Define and parse CLI flags for superuser, password, email
+	userName := flag.String("user", "", "Username for the superuser")
+	password := flag.String("password", "", "Password for the superuser")
+	email := flag.String("email", "", "Email for the superuser")
+	flag.Parse()
+
+	if *userName == "" || *password == "" || *email == "" {
+		log.Fatal("SuperuserName, password, and email are required")
+	}
+
+	// Loading config
+	cfg, err := config.LoadConfig(".")
+	if err != nil {
+		log.Fatalf("Could not load environment variables: %s", err)
+	}
+
+	// Connect to DB
+	db, err := database.DB_Connect(cfg.DB_DSN)
+	if err != nil {
+		log.Fatalf("Could not connect to database: %s", err)
+	}
+	log.Println("Successfully connected to database")
+
+	// Check if user exists
+	var existingUser models.User
+	err = db.Where("user_name = ?", *userName).First(&existingUser).Error
+	if err == nil {
+		log.Fatalf("Superuser with userName '%s' already exists, try another userName!", *userName)
+	}
+
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Fatalf("Error checking for existing superuser: %s", err)
+	}
+
+	// Hashing the password and creating new superuser
+	log.Println("Creating new superuser...")
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*password), 10)
+	if err != nil {
+		log.Fatalf("Could not hash password: %s", err)
+	}
+
+	// Create new admin user
+	adminUser := models.User{
+		UserName:     *userName,
+		PasswordHash: string(hashedPassword),
+		Email:        *email,
+		Role:         cfg.AdminRole,
+	}
+
+	if err := db.Create(&adminUser).Error; err != nil {
+		log.Fatalf("Could not create superuser: %s", err)
+	}
+	log.Println("Superuser created successfully")
+}
